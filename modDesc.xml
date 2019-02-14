@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="42">
+	<author>sperrgebiet</author>
+	<version>1.0.0.0</version>
+	<title>Tardis Teleport</title>
+	<description>
+			Super Duppa Desc
+	</description>
+	<iconFilename>icon.dds</iconFilename>
+	<multiplayer supported="false" />
+
+	<extraSourceFiles>
+		<sourceFile filename="Tardis.lua" />
+	</extraSourceFiles>
+
+	<actions>
+		<action name="showTardisCursor" axisType="HALF" />
+	</actions>
+	<inputBinding>	
+		<actionBinding action="showTardisCursor">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_t" index="1" />
+		</actionBinding>
+    </inputBinding>	
+	
+	<l10n>
+		<text name="tardis_Title">
+			<de>Tardis Teleport</de>
+			<en>Tardis Teleport</en>
+		</text>
+		<text name="input_showTardisCursor">
+			<de>VehicleSort: Fahrzeugliste anzeigen</de>
+			<en>VehicleSort: Show vehicle list</en>
+		</text>
+	</l10n>
+</modDesc>
