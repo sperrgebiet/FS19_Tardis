@@ -1,9 +1,14 @@
+-- fcelsa ...from a gift of TyKonKet and Giants...
+--
+--
+-- 2017-03
+
 Tardis = {};
 Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "1.0.0.0";
+Tardis.Version = "0.0.0.1";
 
 
 Tardis.debug = fileExists(Tardis.ModDirectory ..'debug');
@@ -42,10 +47,16 @@ end
 
 function Tardis:loadMap(name)
 	print("--- loading Tardis V".. Tardis.Version .. " | ModName " .. Tardis.ModName .. " ---");
-end
-
-function Tardis:onLoad(savegame)
 	FSBaseMission.registerActionEvents = Utils.appendedFunction(FSBaseMission.registerActionEvents, Tardis.RegisterActionEvents);
+	
+	Tardis.tardisOn = false;
+    Tardis.mousePos = {0.5, 0.5};
+    Tardis.worldXpos = 0;
+    Tardis.worldZpos = 0;
+    Tardis.fieldNumber = 1;
+    Tardis.ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapWidth / 2;
+	Tardis.ovrlY = g_currentMission.hud.ingameMap.mapPosY + g_currentMission.hud.ingameMap.maxMapHeight;
+	
 end
 
 function Tardis:RegisterActionEvents(isSelected, isOnActiveVehicle)
@@ -53,64 +64,60 @@ function Tardis:RegisterActionEvents(isSelected, isOnActiveVehicle)
 	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'showTardisCursor',self, Tardis.action_showTardisCursor ,false ,true ,false ,true)
 	if result then
 		table.insert(Tardis.eventName, eventName);
-		g_inputBinding.events[eventName].displayIsVisible = Tardis.config[13][2];
+		g_inputBinding.events[eventName].displayIsVisible = true;
+    end
+	
+	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'resetVehicle',self, Tardis.action_resetVehicle ,false ,true ,false ,true)
+	if result then
+		table.insert(Tardis.eventName, eventName);
+		g_inputBinding.events[eventName].displayIsVisible = true;
     end
 		
-end
-
-function Tardis:removeActionEvents()
-	Tardis.eventName = {};
-	if Tardis.debug then
-		print("--- Tardis Debug ... Tardis:removeActionEventsPlayer(Tardis.eventName)");
-		DebugUtil.printTableRecursively(Tardis.eventName,"----",0,1)
-	end
-end
-
-function Tardis.registerEventListeners(vehicleType)
-	local functionNames = {	"onLoad" };
-	
-	for _, functionName in ipairs(functionNames) do
-		SpecializationUtil.registerEventListener(vehicleType, functionName, Tardis);
-	end
 end
 
 function Tardis:keyEvent(unicode, sym, modifier, isDown)
 end
 
 function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
-    if self.tardisOn then
+	--Tardis:dp(string.format('posX {%s) posY {%s}', posX, posY));
+    if Tardis.tardisOn then
         local mOX = g_currentMission.hud.ingameMap.mapPosX;
         local mOY = g_currentMission.hud.ingameMap.mapPosY;
         if posX >= mOX and posX <= mOX + g_currentMission.hud.ingameMap.mapWidth then
-            self.worldXpos = (posX - mOX) / g_currentMission.hud.ingameMap.maxMapWidth;
+            Tardis.worldXpos = (posX - mOX) / g_currentMission.hud.ingameMap.maxMapWidth;
         end;
         if posY >= mOY and posY <= mOY + g_currentMission.hud.ingameMap.mapHeight then
-            self.worldZpos = 1 - (posY - mOY) / g_currentMission.hud.ingameMap.maxMapHeight;
+            Tardis.worldZpos = 1 - (posY - mOY) / g_currentMission.hud.ingameMap.maxMapHeight;
         end;
-        if isDown and button == 1 then
+        if isDown and button == Input.MOUSE_BUTTON_LEFT then
+			Tardis:dp(string.format('posX {%s} posY {%s} - mOX {%s} mOY {%s} - worldXpos {%s} worldZpos {%s}', posX, posY, mOX, mOY, Tardis.worldXpos, Tardis.worldZpos));
 			if not g_currentMission:getIsServer() and g_currentMission.controlledVehicle then
-                local xField = self.worldXpos * g_currentMission.terrainSize;
-                local z = self.worldZpos * g_currentMission.terrainSize;
+                local xField = Tardis.worldXpos * g_currentMission.terrainSize;
+                local z = Tardis.worldZpos * g_currentMission.terrainSize;
                 local theVehicle = g_currentMission.controlledVehicle;
 				g_client:getServerConnection():sendEvent(tardisEvent:new(xField, z, theVehicle));
 			else
-            	self:teleportToLocation(self.worldXpos * g_currentMission.terrainSize, self.worldZpos * g_currentMission.terrainSize);
+			--Tardis:dp(string.format('telePort param1 {%s} - param2 {%s}', Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize));
+            Tardis:teleportToLocation(Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize);
 			end;
-            self.tardisOn = false;
+            Tardis.tardisOn = false;
             g_inputBinding:setShowMouseCursor(false);
         end;
-        self.mousePos[1] = posX;
-        self.mousePos[2] = posY;
+        Tardis.mousePos[1] = posX;
+        Tardis.mousePos[2] = posY;
     end
 end
 
 function Tardis:draw()
-	if self.TardisOn then
-	
-		if g_currentMission.controlledVehicle and not g_currentMission.controlledVehicle:isa(RailroadVehicle) then
-			self:DrawImage(g_currentMission.controlledVehicle,  self.ovrlX + 0.23, self.ovrlY)
+	if Tardis.tardisOn then
+        local px = 0.01;
+        local py = 0.005;	
+		local name;
+		
+		if g_currentMission.controlledVehicle and not Tardis:isTrain(g_currentMission.controlledVehicle) and not Tardis:isCrane(g_currentMission.controlledVehicle) then
+			Tardis:DrawImage(g_currentMission.controlledVehicle,  Tardis.ovrlX + 0.23, Tardis.ovrlY)
 			
-			local vehName = g_currentMission.controlledVehicle:getName();
+			name = g_currentMission.controlledVehicle:getName();
 			
 			if g_currentMission.controlledVehicle.getAttachedImplements ~= nil then
                 local allAttached = {}
@@ -124,41 +131,51 @@ function Tardis:draw()
                 addAllAttached(g_currentMission.controlledVehicle);
                 
                 for i = table.getn(allAttached), 1, -1 do
-					self:DrawImage(allAttached[i].object,  self.ovrlX + 0.23 + 0.085 * i, self.ovrlY)				
+					Tardis:DrawImage(allAttached[i].object,  Tardis.ovrlX + 0.23 + 0.085 * i, Tardis.ovrlY)				
                     name = name .. " + " .. allAttached[i].object:getName();
                 end
             end
 		end
 		
-		--if g_currentMission.controlledVehicle and g_currentMission.controlledVehicle:isa(RailroadVehicle) then
-        --    name = "Train system!! are you sure what you doing?";
-        --end
+		if g_currentMission.controlledVehicle and Tardis:isTrain(g_currentMission.controlledVehicle) then
+			g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_train, 2000);
+            name = g_currentMission.controlledVehicle:getName();
+        end
 		
-		--if g_currentMission.controlledVehicle and g_currentMission.controlledVehicle.combine then
-        --    local fillLevel = g_currentMission.controlledVehicle:getUnitFillLevel(g_currentMission.controlledVehicle.overloading.fillUnitIndex);
-        --    if fillLevel > 0 then
-        --        g_currentMission:showBlinkingWarning(g_i18n:getText("warning_combine"));
-        --    end
-        --end
+		if name == nil or string.len(name) == 0 then
+			name = g_i18n.modEnvironments[Tardis.ModName].texts.lonelyFarmer;
+		end
 		
-		if self.mousePos[1] > ovrlX then
+		if g_currentMission.controlledVehicle and g_currentMission.controlledVehicle.spec_combine then
+			local fillLevelTable = {};
+			g_currentMission.controlledVehicle:getFillLevelInformation(fillLevelTable);
+			
+			for _,fillLevelVehicle in pairs(fillLevelTable) do
+				fillLevel = fillLevelVehicle.fillLevel;
+			end
+			
+			if fillLevel > 0 then
+                g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_combine, 2000);
+            end
+        end
+		
+		if Tardis.mousePos[1] > Tardis.ovrlX then
             px = -(string.len(name) * 0.005) - 0.03;
         end
 
-        if self.mousePos[2] > ovrlY then
+        if Tardis.mousePos[2] > Tardis.ovrlY then
             py = -0.04;
         end
-        renderText(self.mousePos[1] + px, self.mousePos[2] + py, getCorrectTextSize(0.016), name);
+
+        renderText(Tardis.mousePos[1] + px, Tardis.mousePos[2] + py, getCorrectTextSize(0.016), name);
         setTextAlignment(RenderText.ALIGN_RIGHT)
         setTextBold(false)
         setTextColor(0, 1, 0.4, 1)
-        renderText(g_currentMission.inGameMenu.hud.ingameMap.mapPosX + g_currentMission.inGameMenu.hud.ingameMap.mapWidth - g_currentMission.inGameMenu.hud.ingameMap.coordOffsetX, g_currentMission.inGameMenu.hud.ingameMap.mapPosY + g_currentMission.inGameMenu.hud.ingameMap.coordOffsetY + 0.010, g_currentMission.inGameMenu.hud.ingameMap.fontSize, string.format(" [%04d", self.worldXpos * g_currentMission.terrainSize) .. string.format(",%04d]", self.worldZpos * g_currentMission.terrainSize));
+        renderText(g_currentMission.inGameMenu.hud.ingameMap.mapPosX + g_currentMission.inGameMenu.hud.ingameMap.mapWidth - g_currentMission.inGameMenu.hud.ingameMap.coordOffsetX, g_currentMission.inGameMenu.hud.ingameMap.mapPosY + g_currentMission.inGameMenu.hud.ingameMap.coordOffsetY + 0.010, g_currentMission.inGameMenu.hud.ingameMap.fontSize, string.format(" [%04d", Tardis.worldXpos * g_currentMission.terrainSize) .. string.format(",%04d]", Tardis.worldZpos * g_currentMission.terrainSize));
         setTextColor(1, 1, 1, 1)
         setTextAlignment(RenderText.ALIGN_LEFT)
 		
 	end
-end
-
 end
 
 function Tardis:delete()
@@ -171,7 +188,16 @@ end
 
 function Tardis:action_showTardisCursor(actionName, keyStatus, arg3, arg4, arg5)
 	Tardis:dp("action_showTardisCursor fires", "action_showTardisCursor");
-	self.ShowTardis();
+	Tardis:ShowTardis();
+end
+
+function Tardis:action_resetVehicle(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp("action_resetVehicle fires", "action_resetVehicle");
+	
+	if g_currentMission.controlledVehicle then
+		-- We can provide dummy values, as we'll do the actual stuff in the teleport function
+		Tardis:teleportToLocation(0, 0, nil, true);
+	end
 end
 
 
@@ -198,14 +224,9 @@ function Tardis:ShowTardis()
 			g_inputBinding:setShowMouseCursor(false);
 		end;
     end;
-
-	local mCurStat = InputBinding.getShowMouseCursor();
-	if tardis.tardisOn and not mCurStat then
-		g_inputBinding:setShowMouseCursor(true);
-	end;
 end
 
-function Tardis:teleportToLocation(xField, z, theVehicle)
+function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
     
     xField = tonumber(xField);
     z = tonumber(z);
@@ -215,43 +236,55 @@ function Tardis:teleportToLocation(xField, z, theVehicle)
 
     if theVehicle == nil then
         theVehicle = g_currentMission.controlledVehicle;
-    end;
-    
-    local targetX, targetY, targetZ = 0, 0, 0;
-    if z == nil then
-        if g_fieldManager.fields ~= nil then
-            targetX, targetY, targetZ = getWorldTranslation(g_fieldManager.fields[xField].mapHotspot);
-        else
-            return;
-        end;
+    end
+
+	local targetX, targetY, targetZ = 0, 0, 0;
+	
+    if not isReset then	
+		if z == nil then
+			if g_fieldManager.fields ~= nil then
+				targetX, targetY, targetZ = getWorldTranslation(g_fieldManager.fields[xField].mapHotspot);
+			else
+				return;
+			end;
+		else
+			local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
+			local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
+			targetX = MathUtil.clamp(xField, 0, worldSizeX) - worldSizeX * 0.5;
+			targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
+		end
     else
-        local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
-        local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
-        targetX = Utils.clamp(xField, 0, worldSizeX) - worldSizeX * 0.5;
-        targetZ = Utils.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
-    end;
-    
-    if theVehicle == nil then
-        Player:moveTo(targetX, 0.5, targetZ);
+		targetX, targetY, targetZ = getWorldTranslation(g_currentMission.controlledVehicle.rootNode);
+	end
+	
+	Tardis:dp(string.format('targetX {%s} - targetZ {%s}', tostring(targetX), tostring(targetZ)), 'teleportToLocation');
+	
+    if theVehicle == nil and not isReset then
+		g_currentMission.player:moveTo(targetX, 0.5, targetZ, false, false);
     else
         local vehicleCombos = {};
         local vehicles = {};
+
         local function addVehiclePositions(vehicle)
             local x, y, z = getWorldTranslation(vehicle.rootNode);
             table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(theVehicle.rootNode, x, y, z)}});
             
-            for _, impl in pairs(vehicle.attachedImplements) do
-                addVehiclePositions(impl.object);
-                table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.inputAttacherJointDescIndex});
-            end;
-            
-            for i = table.getn(vehicle.attachedImplements), 1, -1 do
-                vehicle:detachImplement(1, true);
-            end;
-            --if not vehicle:isa(RailroadVehicle) then  -- rimuovere se ci sono problemi.
+			if #vehicle:getAttachedImplements() > 0 then
+				for _, impl in pairs(vehicle:getAttachedImplements()) do
+					addVehiclePositions(impl.object);
+					table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.spec_attachable.inputAttacherJointDescIndex});
+				end
+				
+				for i = table.getn(vehicle:getAttachedImplements()), 1, -1 do
+					vehicle:detachImplement(1, true);
+				end
+			end
+
+--ToDo
+--            if not vehicle:isa(RailroadVehicle) then  -- rimuovere se ci sono problemi.
                 vehicle:removeFromPhysics();
-            --end;
-        end;
+--            end
+        end
         
         addVehiclePositions(theVehicle);
         
@@ -265,9 +298,11 @@ function Tardis:teleportToLocation(xField, z, theVehicle)
             data.vehicle:addToPhysics();
         end
         
-        for _, combo in pairs(vehicleCombos) do
-            combo.vehicle:attachImplement(combo.object, combo.inputAttacherJointDescIndex, combo.jointDescIndex, true, nil, nil, false);
-        end
+		if #vehicleCombos > 0 then
+			for _, combo in pairs(vehicleCombos) do
+				combo.vehicle:attachImplement(combo.object, combo.inputAttacherJointDescIndex, combo.jointDescIndex, true, nil, nil, false);
+			end
+		end
     end
 
 end
@@ -291,6 +326,14 @@ function Tardis:getStoreImageByConf(confFile)
 		end
 		return imgFileName;
 	end
+end
+
+function Tardis:isCrane(obj)
+	return obj['typeName'] == 'crane';
+end
+
+function Tardis:isTrain(obj)
+	return obj['typeName'] == 'locomotive';
 end
 
 --- client/server event part---

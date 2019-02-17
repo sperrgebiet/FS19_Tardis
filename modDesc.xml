@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="42">
 	<author>sperrgebiet</author>
-	<version>1.0.0.0</version>
+	<version>0.0.0.1</version>
 	<title>Tardis Teleport</title>
 	<description>
 			Super Duppa Desc
@@ -15,10 +15,14 @@
 
 	<actions>
 		<action name="showTardisCursor" axisType="HALF" />
+		<action name="resetVehicle" axisType="HALF" />
 	</actions>
 	<inputBinding>	
 		<actionBinding action="showTardisCursor">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_t" index="1" />
+		</actionBinding>
+		<actionBinding action="resetVehicle">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_backspace" index="1" />
 		</actionBinding>
     </inputBinding>	
 	
@@ -28,8 +32,24 @@
 			<en>Tardis Teleport</en>
 		</text>
 		<text name="input_showTardisCursor">
-			<de>VehicleSort: Fahrzeugliste anzeigen</de>
-			<en>VehicleSort: Show vehicle list</en>
+			<de>Tardis ein</de>
+			<en>Tardis on</en>
+		</text>
+		<text name="input_resetVehicle">
+			<de>Fahrzeug aufrichten</de>
+			<en>Dispose vehicle</en>
+		</text>
+		<text name="lonelyFarmer">
+			<de>Einsamer Landwirt</de>
+			<en>Lonely Farmer</en>
+		</text>		
+		<text name="warning_combine">
+			<de>Ein Drescher sollte leer und zugeklappt sein, da es ansonsten Probleme geben kann.</de>
+			<en>A combine should be folded and empty, otherwise there can be issues.</en>
+		</text>
+		<text name="warning_train">
+			<de>Ein Zug passt leider nicht in eine Telefonzelle. OK, tut er schon, nur bringts halt nix.</de>
+			<en>A train doesn't fit a phone box. Well, ok, it actually does. It's funny to watch, just doesn't make any sense.</en>
 		</text>
 	</l10n>
 </modDesc>
