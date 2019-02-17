@@ -51,5 +51,9 @@
 			<de>Ein Zug passt leider nicht in eine Telefonzelle. OK, tut er schon, nur bringts halt nix.</de>
 			<en>A train doesn't fit a phone box. Well, ok, it actually does. It's funny to watch, just doesn't make any sense.</en>
 		</text>
+		<text name="warning_crane">
+			<de>Ein Kran passt leider nicht in eine Telefonzelle. OK, tut er schon, nur bringts halt nix.</de>
+			<en>A crane doesn't fit a phone box. Well, ok, it actually does. It's funny to watch, just doesn't make any sense.</en>
+		</text>		
 	</l10n>
 </modDesc>

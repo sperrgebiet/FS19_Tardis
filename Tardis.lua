@@ -10,6 +10,10 @@ Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
 Tardis.Version = "0.0.0.1";
 
+-- Integration environment for VehicleExplorer
+envVeEx = {};
+
+Tardis.camBackup = nil;
 
 Tardis.debug = fileExists(Tardis.ModDirectory ..'debug');
 
@@ -54,9 +58,14 @@ function Tardis:loadMap(name)
     Tardis.worldXpos = 0;
     Tardis.worldZpos = 0;
     Tardis.fieldNumber = 1;
-    Tardis.ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapWidth / 2;
-	Tardis.ovrlY = g_currentMission.hud.ingameMap.mapPosY + g_currentMission.hud.ingameMap.maxMapHeight;
 	
+	-- Integration with Vehicle Explorer
+	local VeExName = "FS19_VehicleExplorer";
+
+	if g_modIsLoaded[VeExName] then
+		envVeEx = getfenv(0)[VeExName];
+		print("Tardis: VehicleExplorer integration available");
+	end
 end
 
 function Tardis:RegisterActionEvents(isSelected, isOnActiveVehicle)
@@ -110,45 +119,77 @@ end
 
 function Tardis:draw()
 	if Tardis.tardisOn then
+	    --local ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapWidth / 2;
+		--local ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapOffsetX + getTextWidth(g_currentMission.hud.ingameMap.mapLabelTextSize, g_currentMission.hud.ingameMap.mapLabelText);
+		--local ovrlX = g_currentMission.hud.ingameMap.mapPosX + getTextWidth(g_currentMission.hud.ingameMap.mapLabelTextSize, g_currentMission.hud.ingameMap.mapLabelText);
+		local ovrlX = g_currentMission.hud.ingameMap.mapPosX + getTextWidth(g_currentMission.hud.ingameMap.mapLabelTextSize, g_currentMission.hud.ingameMap.mapLabelText);
+		local ovrlY = g_currentMission.hud.ingameMap.mapPosY + g_currentMission.hud.ingameMap.maxMapHeight;
         local px = 0.01;
         local py = 0.005;	
 		local name;
+		local theVehicle;
+		local drawImage = false;		--There are so many cases where we don't want to draw a image, so easier to just set it to true in case it's the currently controlled vehicle
 		
-		if g_currentMission.controlledVehicle and not Tardis:isTrain(g_currentMission.controlledVehicle) and not Tardis:isCrane(g_currentMission.controlledVehicle) then
-			Tardis:DrawImage(g_currentMission.controlledVehicle,  Tardis.ovrlX + 0.23, Tardis.ovrlY)
+		if envVeEx ~= nil and g_currentMission.controlledVehicle == nil then
+			if envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
+				local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
+				if realVeh ~= nil then
+					theVehicle = realVeh;
+				end
+			end
+		elseif g_currentMission.controlledVehicle ~= nil then
+			theVehicle = g_currentMission.controlledVehicle;
+			drawImage = true;
+		end
+		
+		if theVehicle ~= nil then
+			--Get image size
+			local storeImgX, storeImgY = getNormalizedScreenValues(128, 128)
+				
+			if drawImage then
+				Tardis:DrawImage(theVehicle, ovrlX, ovrlY)
+			end
 			
-			name = g_currentMission.controlledVehicle:getName();
+			name = theVehicle:getName();
 			
-			if g_currentMission.controlledVehicle.getAttachedImplements ~= nil then
+			if theVehicle.getAttachedImplements ~= nil then
                 local allAttached = {}
                 local function addAllAttached(vehicle)
                     for _, implA in pairs(vehicle:getAttachedImplements()) do
                         addAllAttached(implA.object);
                         table.insert(allAttached, {vehicle = vehicle, object = implA.object, jointDescIndex = implA.jointDescIndex, inputAttacherJointDescIndex = implA.object.inputAttacherJointDescIndex});
-                    end;
-                end;
+                    end
+                end
                 
-                addAllAttached(g_currentMission.controlledVehicle);
+                addAllAttached(theVehicle);
                 
                 for i = table.getn(allAttached), 1, -1 do
-					Tardis:DrawImage(allAttached[i].object,  Tardis.ovrlX + 0.23 + 0.085 * i, Tardis.ovrlY)				
+					if drawImage then
+						Tardis:DrawImage(allAttached[i].object, ovrlX + storeImgX * i, ovrlY)				
+					end
+
                     name = name .. " + " .. allAttached[i].object:getName();
                 end
             end
 		end
 		
-		if g_currentMission.controlledVehicle and Tardis:isTrain(g_currentMission.controlledVehicle) then
+		if theVehicle and Tardis:isTrain(theVehicle) then
 			g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_train, 2000);
-            name = g_currentMission.controlledVehicle:getName();
+            name = theVehicle:getName();
         end
 		
+		if theVehicle and Tardis:isCrane(theVehicle) then
+			g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_crane, 2000);
+            name = theVehicle:getName();
+        end		
+		
 		if name == nil or string.len(name) == 0 then
-			name = g_i18n.modEnvironments[Tardis.ModName].texts.lonelyFarmer;
+			name = string.format('%s %s', g_i18n.modEnvironments[Tardis.ModName].texts.lonelyFarmer, g_gameSettings.nickname);
 		end
 		
-		if g_currentMission.controlledVehicle and g_currentMission.controlledVehicle.spec_combine then
+		if theVehicle and theVehicle.spec_combine then
 			local fillLevelTable = {};
-			g_currentMission.controlledVehicle:getFillLevelInformation(fillLevelTable);
+			theVehicle:getFillLevelInformation(fillLevelTable);
 			
 			for _,fillLevelVehicle in pairs(fillLevelTable) do
 				fillLevel = fillLevelVehicle.fillLevel;
@@ -159,11 +200,11 @@ function Tardis:draw()
             end
         end
 		
-		if Tardis.mousePos[1] > Tardis.ovrlX then
+		if Tardis.mousePos[1] > ovrlX then
             px = -(string.len(name) * 0.005) - 0.03;
         end
 
-        if Tardis.mousePos[2] > Tardis.ovrlY then
+        if Tardis.mousePos[2] > ovrlY then
             py = -0.04;
         end
 
@@ -220,10 +261,39 @@ function Tardis:ShowTardis()
 		Tardis.tardisOn = not Tardis.tardisOn;
 		if Tardis.tardisOn then
 			g_inputBinding:setShowMouseCursor(true);
+			--if Tardis.camBackup == nil then
+			--	if g_currentMission.controlledVehicle ~= nil then
+			--		Tardis.camBackup = {};
+			--		for	i, v in ipairs(g_currentMission.controlledVehicle.spec_enterable.cameras) do
+			--			local cam = {i, v.isRotatable};
+			--			table.insert(Tardis.camBackup, cam);
+			--			v.isRotatable = false;
+			--		end
+			--	else
+			--		Tardis.camBackup = g_currentMission.player.inputInformation.isMouseRotation;
+			--		g_currentMission.player.inputInformation.isMouseRotation = false;
+			--	end
+			--end
 		else
+			Tardis.tardisOn = false;
 			g_inputBinding:setShowMouseCursor(false);
-		end;
-    end;
+			
+			--if Tardis.camBackup ~= nil then
+			--	if g_currentMission.controlledVehicle ~= nil then
+			--		for _, v in ipairs(Tardis.camBackup) do
+			--			g_currentMission.controlledVehicle.spec_enterable.cameras[v[1]].isRotatable = v[2];
+			--		end
+			--		Tardis.camBackup = nil;
+			--	else
+			--		g_currentMission.player.inputInformation.isMouseRotation = Tardis.camBackup;
+			--		Tardis.camBackup = nil;
+			--	end
+			--end
+		end
+	elseif Tardis.tardisOn then
+		Tardis.tardisOn = false;
+		g_inputBinding:setShowMouseCursor(false);
+    end
 end
 
 function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
@@ -234,6 +304,15 @@ function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
         return;
     end;
 
+	if envVeEx ~= nil then
+		if envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
+			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
+			if realVeh ~= nil then
+				theVehicle = realVeh;
+			end
+		end
+	end
+	
     if theVehicle == nil then
         theVehicle = g_currentMission.controlledVehicle;
     end
