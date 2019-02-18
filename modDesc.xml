@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="42">
 	<author>sperrgebiet</author>
-	<version>0.0.0.1</version>
+	<version>0.0.0.4</version>
 	<title>Tardis Teleport</title>
 	<description>
-			Super Duppa Desc
+		<en>
+			<![CDATA[
+			This is a revamp of the good old Tardis from FS17.
+			
+			For beginners: With Tardis you can teleport yourself or your vehicles to any location on the map.
+			Besides that it has a couple of additional functionality. See below.
+			
+			More Details: https://github.com/sperrgebiet/FS19_Tardis
+			]]>
+		</en>
+		<de>
+			<![CDATA[
+			Dies ist eine Reinkarnation von Tardis aus LS17
+			Für Neueinsteiger: Mit Tardis kannst du dich selbst oder eines deiner Fahrzeuge zu jeder Lokation teleportieren.
+			
+			Mehr Details: https://github.com/sperrgebiet/FS19_Tardis
+			]]>
+		</de>
 	</description>
 	<iconFilename>icon.dds</iconFilename>
 	<multiplayer supported="false" />
@@ -32,12 +49,12 @@
 			<en>Tardis Teleport</en>
 		</text>
 		<text name="input_showTardisCursor">
-			<de>Tardis ein</de>
-			<en>Tardis on</en>
+			<de>Tardis: Tardis ein</de>
+			<en>Tardis: Tardis on</en>
 		</text>
 		<text name="input_resetVehicle">
-			<de>Fahrzeug aufrichten</de>
-			<en>Dispose vehicle</en>
+			<de>Tardis: Fahrzeug auf derzeitiger Position aufrichten</de>
+			<en>Tardis: Raise up vehicle on current position</en>
 		</text>
 		<text name="lonelyFarmer">
 			<de>Einsamer Landwirt</de>
@@ -48,12 +65,12 @@
 			<en>A combine should be folded and empty, otherwise there can be issues.</en>
 		</text>
 		<text name="warning_train">
-			<de>Ein Zug passt leider nicht in eine Telefonzelle. OK, tut er schon, nur bringts halt nix.</de>
-			<en>A train doesn't fit a phone box. Well, ok, it actually does. It's funny to watch, just doesn't make any sense.</en>
+			<de>Ein Zug passt leider nicht in eine Telefonzelle. Tardis funktioniert hier nicht.</de>
+			<en>A train doesn't fit a phone box. Tardis won't work here.</en>
 		</text>
 		<text name="warning_crane">
-			<de>Ein Kran passt leider nicht in eine Telefonzelle. OK, tut er schon, nur bringts halt nix.</de>
-			<en>A crane doesn't fit a phone box. Well, ok, it actually does. It's funny to watch, just doesn't make any sense.</en>
+			<de>Ein Kran passt leider nicht in eine Telefonzelle. Tardis funktioniert hier nicht.</de>
+			<en>A crane doesn't fit a phone box. Tardis won't work here.</en>
 		</text>		
 	</l10n>
 </modDesc>

@@ -11,9 +11,9 @@ Tardis.ModDirectory = g_currentModDirectory;
 Tardis.Version = "0.0.0.1";
 
 -- Integration environment for VehicleExplorer
-envVeEx = {};
+envVeEx = nil;
 
-Tardis.camBackup = nil;
+Tardis.camBackup = {};
 
 Tardis.debug = fileExists(Tardis.ModDirectory ..'debug');
 
@@ -106,9 +106,9 @@ function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
                 local theVehicle = g_currentMission.controlledVehicle;
 				g_client:getServerConnection():sendEvent(tardisEvent:new(xField, z, theVehicle));
 			else
-			--Tardis:dp(string.format('telePort param1 {%s} - param2 {%s}', Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize));
-            Tardis:teleportToLocation(Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize);
-			end;
+				--Tardis:dp(string.format('telePort param1 {%s} - param2 {%s}', Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize));
+				Tardis:teleportToLocation(Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize);
+			end
             Tardis.tardisOn = false;
             g_inputBinding:setShowMouseCursor(false);
         end;
@@ -130,12 +130,10 @@ function Tardis:draw()
 		local theVehicle;
 		local drawImage = false;		--There are so many cases where we don't want to draw a image, so easier to just set it to true in case it's the currently controlled vehicle
 		
-		if envVeEx ~= nil and g_currentMission.controlledVehicle == nil then
-			if envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
-				local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
-				if realVeh ~= nil then
-					theVehicle = realVeh;
-				end
+		if envVeEx ~= nil and envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
+			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
+			if realVeh ~= nil then
+				theVehicle = realVeh;
 			end
 		elseif g_currentMission.controlledVehicle ~= nil then
 			theVehicle = g_currentMission.controlledVehicle;
@@ -261,34 +259,17 @@ function Tardis:ShowTardis()
 		Tardis.tardisOn = not Tardis.tardisOn;
 		if Tardis.tardisOn then
 			g_inputBinding:setShowMouseCursor(true);
-			--if Tardis.camBackup == nil then
-			--	if g_currentMission.controlledVehicle ~= nil then
-			--		Tardis.camBackup = {};
-			--		for	i, v in ipairs(g_currentMission.controlledVehicle.spec_enterable.cameras) do
-			--			local cam = {i, v.isRotatable};
-			--			table.insert(Tardis.camBackup, cam);
-			--			v.isRotatable = false;
-			--		end
-			--	else
-			--		Tardis.camBackup = g_currentMission.player.inputInformation.isMouseRotation;
-			--		g_currentMission.player.inputInformation.isMouseRotation = false;
-			--	end
-			--end
+			Tardis:Freeze(true);
+			
+			--It's getting confusing when we want to use Tardis and VehicleExplorer at the same but, although the integration was disabled
+			--So better to close the vehicle list from VeEx in that case
+			if envVeEx ~= nil and not envVeEx.VehicleSort.config[22][2] and envVeEx.VehicleSort.showSteerables then
+				envVeEx.VehicleSort.showSteerables = false;
+			end
 		else
 			Tardis.tardisOn = false;
 			g_inputBinding:setShowMouseCursor(false);
-			
-			--if Tardis.camBackup ~= nil then
-			--	if g_currentMission.controlledVehicle ~= nil then
-			--		for _, v in ipairs(Tardis.camBackup) do
-			--			g_currentMission.controlledVehicle.spec_enterable.cameras[v[1]].isRotatable = v[2];
-			--		end
-			--		Tardis.camBackup = nil;
-			--	else
-			--		g_currentMission.player.inputInformation.isMouseRotation = Tardis.camBackup;
-			--		Tardis.camBackup = nil;
-			--	end
-			--end
+			Tardis:Freeze(false);
 		end
 	elseif Tardis.tardisOn then
 		Tardis.tardisOn = false;
@@ -297,26 +278,35 @@ function Tardis:ShowTardis()
 end
 
 function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
-    
+
     xField = tonumber(xField);
     z = tonumber(z);
     if xField == nil then
         return;
     end;
 
-	if envVeEx ~= nil then
+	if envVeEx ~= nil and theVehicle == nil then
 		if envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
 			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
 			if realVeh ~= nil then
 				theVehicle = realVeh;
+				if theVehicle ~= g_currentMission.controlledVehicle then
+					envVeEx.VehicleSort.wasTeleportAction = true;
+				end
 			end
 		end
 	end
 	
-    if theVehicle == nil then
-        theVehicle = g_currentMission.controlledVehicle;
-    end
+	if theVehicle == nil then
+		theVehicle = g_currentMission.controlledVehicle;
+	end
 
+	-- We don't want to teleport cranes or trains
+	if theVehicle ~= nil and (Tardis:isTrain(theVehicle) or Tardis:isCrane(theVehicle)) then
+		Tardis:Freeze(false);
+		return false;
+	end
+	
 	local targetX, targetY, targetZ = 0, 0, 0;
 	
     if not isReset then	
@@ -340,6 +330,7 @@ function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
 	
     if theVehicle == nil and not isReset then
 		g_currentMission.player:moveTo(targetX, 0.5, targetZ, false, false);
+		Tardis:Freeze(false);
     else
         local vehicleCombos = {};
         local vehicles = {};
@@ -359,10 +350,7 @@ function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
 				end
 			end
 
---ToDo
---            if not vehicle:isa(RailroadVehicle) then  -- rimuovere se ci sono problemi.
-                vehicle:removeFromPhysics();
---            end
+			vehicle:removeFromPhysics();
         end
         
         addVehiclePositions(theVehicle);
@@ -382,6 +370,8 @@ function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
 				combo.vehicle:attachImplement(combo.object, combo.inputAttacherJointDescIndex, combo.jointDescIndex, true, nil, nil, false);
 			end
 		end
+		
+		Tardis:Freeze(false);
     end
 
 end
@@ -413,6 +403,39 @@ end
 
 function Tardis:isTrain(obj)
 	return obj['typeName'] == 'locomotive';
+end
+
+function Tardis:Freeze(setFreeze)
+	local veh = g_currentMission.controlledVehicle;
+
+	if setFreeze then
+		if veh ~= nil then
+			local veh = g_currentMission.controlledVehicle;
+			-- We just want to mess with the cameras when we can ensure that we can do a backup first
+			if Tardis.camBackup[veh.id] == nil then
+				Tardis.camBackup[veh.id] = {};
+				for	i, v in ipairs(veh.spec_enterable.cameras) do
+					local cam = {i, v.isRotatable};
+					table.insert(Tardis.camBackup[veh.id], cam);
+					v.isRotatable = false;
+				end
+			end
+		else
+			g_currentMission.isPlayerFrozen = true;
+		end
+	else
+		if veh ~= nil then
+			if Tardis.camBackup[veh.id] ~= nil then
+				for _, v in ipairs(Tardis.camBackup[veh.id]) do
+					veh.spec_enterable.cameras[v[1]]['isRotatable'] = v[2];
+				end
+				Tardis.camBackup[veh.id] = nil;
+			end
+		end
+		--Always unfreeze player
+		g_currentMission.isPlayerFrozen = false;
+	end
+
 end
 
 --- client/server event part---
