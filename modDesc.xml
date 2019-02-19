@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="42">
 	<author>sperrgebiet</author>
-	<version>0.0.0.4</version>
+	<version>0.0.0.5</version>
 	<title>Tardis Teleport</title>
 	<description>
 		<en>
@@ -27,8 +27,13 @@
 	<multiplayer supported="false" />
 
 	<extraSourceFiles>
-		<sourceFile filename="Tardis.lua" />
-	</extraSourceFiles>
+		<sourceFile filename="RegisterSpecialization.lua" />
+	</extraSourceFiles>	
+	
+	<registerSpecializations debugPriority="0">
+		<registerSpecialization name="tardis" className="Tardis" filename="Tardis.lua" searchedSpecializations="Enterable"/>
+	</registerSpecializations>	
+
 
 	<actions>
 		<action name="showTardisCursor" axisType="HALF" />

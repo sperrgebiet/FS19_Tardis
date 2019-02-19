@@ -1,14 +1,13 @@
--- fcelsa ...from a gift of TyKonKet and Giants...
---
---
--- 2017-03
+-- Tardis.lua for FS19
+-- Author: sperrgebiet
+-- Please see https://github.com/sperrgebiet/FS19_Tardis for additional information, credits, issues and everything else
 
 Tardis = {};
 Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.0.0.1";
+Tardis.Version = "0.0.0.5";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -75,6 +74,19 @@ function Tardis:RegisterActionEvents(isSelected, isOnActiveVehicle)
 		table.insert(Tardis.eventName, eventName);
 		g_inputBinding.events[eventName].displayIsVisible = true;
     end
+		
+end
+
+function Tardis.registerEventListeners(vehicleType)
+	local functionNames = {	"onRegisterActionEvents", };
+	
+	for _, functionName in ipairs(functionNames) do
+		SpecializationUtil.registerEventListener(vehicleType, functionName, Tardis);
+	end
+end
+
+--Vehicle functions
+function Tardis:onRegisterActionEvents(isSelected, isOnActiveVehicle)
 	
 	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'resetVehicle',self, Tardis.action_resetVehicle ,false ,true ,false ,true)
 	if result then
@@ -185,7 +197,7 @@ function Tardis:draw()
 			name = string.format('%s %s', g_i18n.modEnvironments[Tardis.ModName].texts.lonelyFarmer, g_gameSettings.nickname);
 		end
 		
-		if theVehicle and theVehicle.spec_combine then
+		if theVehicle and theVehicle.spec_combine ~= nil and theVehicle.getFillLevelInformation ~= nil then
 			local fillLevelTable = {};
 			theVehicle:getFillLevelInformation(fillLevelTable);
 			
@@ -193,7 +205,7 @@ function Tardis:draw()
 				fillLevel = fillLevelVehicle.fillLevel;
 			end
 			
-			if fillLevel > 0 then
+			if fillLevel ~= nil and fillLevel > 0 then
                 g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_combine, 2000);
             end
         end
