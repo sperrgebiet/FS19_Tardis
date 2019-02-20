@@ -25,12 +25,13 @@ Feedback, this readme and additional information incl. source code can be find a
 * No known ones
 
 ## Default Keybinding
-LAlt + t -> tardis on
-LAlt + Backspace -> Reset
-LAlt + LShift + KeyPad 1 - 5 -> Set or visit the map hotspot
-LAlt + LShift + Backspace -> Delete a map hotspot in a 25m range
-
-Mouse Left: Teleport
+|Key Combo|Action|
+|:---:|---|
+|LAlt + t|Activate Tardis|
+|LAlt + Backspace|Reset|
+|LAlt + LShift + KeyPad 1 - 5|Set or visit the map hotspot|
+|LAlt + LShift + Backspace|Delete a map hotspot in a 25m range|
+|Mouse Left|Teleport|
 
 
 ## Note that the current version does NOT support multiplayer!
@@ -74,12 +75,13 @@ Feedback, dieses ReadMe und weitere Informationen sowie der Quelltext findet sic
 * Keine bekannt
 
 ## Standard Tastenbelegung
-LAlt + t -> Tardis ein (funktioniert nur auf der MiniMap)
-LAlt + Rücktaste -> Fahrzeug aufrichten
-LAlt + LUmschalt + NumPad 1 - 5: Setzen/besuchen der Hotspots
-LAlt + LUmschalt + Rücktaste: Löschen eines Mapspots in der Nähe (25m).
-
-Linke Maustaste: An diese Position teleportieren
+|Key Kombi|Aktion|
+|:---:|---|
+|LAlt + t|Tardis aktivieren (funktioniert nur auf der MiniMap)|
+|LAlt + Rücktaste|Fahrzeug aufrichten|
+|LAlt + LUmschalt + NumPad 1 - 5|Setzen/besuchen der Hotspots|
+|LAlt + LUmschalt + Rücktaste|Löschen eines Mapspots in der Nähe (25m)|
+|Linke Maustaste|An diese Position teleportieren|
 
 
 ## Beachte, dass die jetzige Version kein Multiplayer unterstützt!
@@ -96,4 +98,10 @@ Des weiteren noch Ifko[nator] für das RegisterSpecialization Skript.
 
 
 # Screenshots
+YouTube Vorstellung in Deutsch: https://www.youtube.com/watch?v=w2LY9rmA4-g&t=7s
 
+![FS19_Tardis_1](https://user-images.githubusercontent.com/20586786/53123931-7bb06f80-355a-11e9-87c5-3373f0e49519.png)
+![FS19_Tardis_2](https://user-images.githubusercontent.com/20586786/53123933-7bb06f80-355a-11e9-9416-7ff49150004b.png)
+![FS19_Tardis_3](https://user-images.githubusercontent.com/20586786/53123934-7bb06f80-355a-11e9-8965-6c13951ac5fb.png)
+![FS19_Tardis_4](https://user-images.githubusercontent.com/20586786/53123935-7bb06f80-355a-11e9-951e-6eb95f6ad5cf.png)
+![FS19_Tardis_5](https://user-images.githubusercontent.com/20586786/53123936-7c490600-355a-11e9-93e2-fdda079be63d.png)
