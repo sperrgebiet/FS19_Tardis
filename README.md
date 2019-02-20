@@ -50,7 +50,7 @@ Additionally Ifko[nator] for the RegisterSpecialization script.
 -----
 
 
-# Tardis für LS19 aka VeEx19
+# Tardis für LS19
 **Dies ist eine Reinkarnation von Tardis aus LS17**
 
 Für Neueinsteiger: Mit Tardis kannst du dich selbst oder eines deiner Fahrzeuge zu jeder Lokation teleportieren.
