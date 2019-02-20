@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="42">
 	<author>sperrgebiet</author>
-	<version>0.0.0.5</version>
+	<version>0.9.1.0</version>
 	<title>Tardis Teleport</title>
 	<description>
 		<en>
@@ -36,16 +36,40 @@
 
 
 	<actions>
-		<action name="showTardisCursor" axisType="HALF" />
-		<action name="resetVehicle" axisType="HALF" />
+		<action name="tardis_showTardisCursor" axisType="HALF" />
+		<action name="tardis_resetVehicle" axisType="HALF" />
+		<action name="tardis_useHotspot1" axisType="HALF" />
+		<action name="tardis_useHotspot2" axisType="HALF" />
+		<action name="tardis_useHotspot3" axisType="HALF" />
+		<action name="tardis_useHotspot4" axisType="HALF" />
+		<action name="tardis_useHotspot5" axisType="HALF" />
+		<action name="tardis_deleteHotspot" axisType="HALF" />
 	</actions>
 	<inputBinding>	
-		<actionBinding action="showTardisCursor">
+		<actionBinding action="tardis_showTardisCursor">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_t" index="1" />
 		</actionBinding>
-		<actionBinding action="resetVehicle">
+		<actionBinding action="tardis_resetVehicle">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_backspace" index="1" />
 		</actionBinding>
+		<actionBinding action="tardis_useHotspot1">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_1" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot2">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_2" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot3">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_3" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot4">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_4" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot5">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_clear" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_deleteHotspot">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_backspace" index="1" />
+		</actionBinding>	
     </inputBinding>	
 	
 	<l10n>
@@ -53,11 +77,11 @@
 			<de>Tardis Teleport</de>
 			<en>Tardis Teleport</en>
 		</text>
-		<text name="input_showTardisCursor">
-			<de>Tardis: Tardis ein</de>
-			<en>Tardis: Tardis on</en>
+		<text name="input_tardis_showTardisCursor">
+			<de>Tardis: Auf Minimap aktivieren</de>
+			<en>Tardis: Activate on Minimap</en>
 		</text>
-		<text name="input_resetVehicle">
+		<text name="input_tardis_resetVehicle">
 			<de>Tardis: Fahrzeug auf derzeitiger Position aufrichten</de>
 			<en>Tardis: Raise up vehicle on current position</en>
 		</text>
@@ -76,6 +100,46 @@
 		<text name="warning_crane">
 			<de>Ein Kran passt leider nicht in eine Telefonzelle. Tardis funktioniert hier nicht.</de>
 			<en>A crane doesn't fit a phone box. Tardis won't work here.</en>
-		</text>		
+		</text>
+		<text name="hotspot">
+			<de>Tardis Hotspot</de>
+			<en>Tardis Hotspot</en>
+		</text>
+		<text name="input_tardis_useHotspot1">
+			<de>Tardis: Ort 1</de>
+			<en>Tardis: Spot 1</en>
+		</text>
+		<text name="input_tardis_useHotspot2">
+			<de>Tardis: Ort 2</de>
+			<en>Tardis: Spot 2</en>
+		</text>	
+		<text name="input_tardis_useHotspot3">
+			<de>Tardis: Ort 3</de>
+			<en>Tardis: Spot 3</en>
+		</text>	
+		<text name="input_tardis_useHotspot4">
+			<de>Tardis: Ort 4</de>
+			<en>Tardis: Spot 4</en>
+		</text>	
+		<text name="input_tardis_useHotspot5">
+			<de>Tardis: Ort 5</de>
+			<en>Tardis: Spot 5</en>
+		</text>	
+		<text name="input_tardis_deleteHotspot">
+			<de>Tardis: Lösche Hotspot im Umkreis</de>
+			<en>Tardis: Delete Hotspot in range</en>
+		</text>
+		<text name="warning_nohotspot">
+			<de>Keine Tardis Hotspots im Umkreis gefunden</de>
+			<en>No Tardis Hotspots found in this area</en>
+		</text>
+		<text name="warning_created">
+			<de>erstellt</de>
+			<en>created</en>
+		</text>
+		<text name="warning_deleted">
+			<de>gelöscht</de>
+			<en>deleted</en>
+		</text>
 	</l10n>
 </modDesc>

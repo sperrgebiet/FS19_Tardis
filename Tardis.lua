@@ -7,12 +7,13 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.0.0.5";
+Tardis.Version = "0.9.1.0";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
 
 Tardis.camBackup = {};
+Tardis.hotspots = {};
 
 Tardis.debug = fileExists(Tardis.ModDirectory ..'debug');
 
@@ -50,7 +51,8 @@ end
 
 function Tardis:loadMap(name)
 	print("--- loading Tardis V".. Tardis.Version .. " | ModName " .. Tardis.ModName .. " ---");
-	FSBaseMission.registerActionEvents = Utils.appendedFunction(FSBaseMission.registerActionEvents, Tardis.RegisterActionEvents);
+	FSBaseMission.registerActionEvents = Utils.appendedFunction(FSBaseMission.registerActionEvents, Tardis.registerActionEvents);
+	Player.registerActionEvents = Utils.appendedFunction(Player.registerActionEvents, Tardis.registerActionEventsPlayer);
 	
 	Tardis.tardisOn = false;
     Tardis.mousePos = {0.5, 0.5};
@@ -67,14 +69,30 @@ function Tardis:loadMap(name)
 	end
 end
 
-function Tardis:RegisterActionEvents(isSelected, isOnActiveVehicle)
+-- Global action events
+function Tardis:registerActionEvents(isSelected, isOnActiveVehicle)
+	local actions = {
+					"tardis_showTardisCursor",
+					"tardis_useHotspot1",
+					"tardis_useHotspot2",
+					"tardis_useHotspot3",
+					"tardis_useHotspot4",
+					"tardis_useHotspot5",
+					"tardis_deleteHotspot"
+				};
 
-	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'showTardisCursor',self, Tardis.action_showTardisCursor ,false ,true ,false ,true)
-	if result then
-		table.insert(Tardis.eventName, eventName);
-		g_inputBinding.events[eventName].displayIsVisible = true;
-    end
+	for _, action in pairs(actions) do
+		local actionMethod = string.format("action_%s", action);
+		local result, eventName = InputBinding.registerActionEvent(g_inputBinding, action, self, Tardis[actionMethod], false, true, false, true)
+		if result then
+			table.insert(Tardis.eventName, eventName);
+			g_inputBinding.events[eventName].displayIsVisible = true;
+		end
+	end
 		
+end
+
+function Tardis:registerActionEventsPlayer()
 end
 
 function Tardis.registerEventListeners(vehicleType)
@@ -88,7 +106,7 @@ end
 --Vehicle functions
 function Tardis:onRegisterActionEvents(isSelected, isOnActiveVehicle)
 	
-	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'resetVehicle',self, Tardis.action_resetVehicle ,false ,true ,false ,true)
+	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'tardis_resetVehicle',self, Tardis.action_tardis_resetVehicle ,false ,true ,false ,true)
 	if result then
 		table.insert(Tardis.eventName, eventName);
 		g_inputBinding.events[eventName].displayIsVisible = true;
@@ -237,13 +255,13 @@ end
 
 -- Functions for actionEvents/inputBindings
 
-function Tardis:action_showTardisCursor(actionName, keyStatus, arg3, arg4, arg5)
-	Tardis:dp("action_showTardisCursor fires", "action_showTardisCursor");
+function Tardis:action_tardis_showTardisCursor(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
 	Tardis:ShowTardis();
 end
 
-function Tardis:action_resetVehicle(actionName, keyStatus, arg3, arg4, arg5)
-	Tardis:dp("action_resetVehicle fires", "action_resetVehicle");
+function Tardis:action_tardis_resetVehicle(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
 	
 	if g_currentMission.controlledVehicle then
 		-- We can provide dummy values, as we'll do the actual stuff in the teleport function
@@ -251,6 +269,42 @@ function Tardis:action_resetVehicle(actionName, keyStatus, arg3, arg4, arg5)
 	end
 end
 
+function Tardis:action_tardis_useHotspot1(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(1);
+end
+
+function Tardis:action_tardis_useHotspot2(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(2);
+end
+
+function Tardis:action_tardis_useHotspot3(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(3);
+end
+
+function Tardis:action_tardis_useHotspot4(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(4);
+end
+
+function Tardis:action_tardis_useHotspot5(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(5);
+end
+
+function Tardis:action_tardis_deleteHotspot(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	local hotspotId = Tardis:hotspotNearby();
+	if hotspotId > 0 then
+		Tardis:dp(string.format('Found hotspot {%d}. Going to delete it.', hotspotId), 'action_deleteHotspot');
+		Tardis:removeMapHotspot(hotspotId);
+	else
+		Tardis:dp('No hotspots nearby', 'action_deleteHotspot');
+		Tardis:showBlinking(nil, 3);
+	end
+end
 
 --
 -- Tardis specific functions
@@ -289,11 +343,11 @@ function Tardis:ShowTardis()
     end
 end
 
-function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
+function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
 
-    xField = tonumber(xField);
+    x = tonumber(x);
     z = tonumber(z);
-    if xField == nil then
+    if x == nil then
         return;
     end;
 
@@ -321,20 +375,23 @@ function Tardis:teleportToLocation(xField, z, theVehicle, isReset)
 	
 	local targetX, targetY, targetZ = 0, 0, 0;
 	
-    if not isReset then	
+    if not isReset and not isHotspot then	
 		if z == nil then
 			if g_fieldManager.fields ~= nil then
-				targetX, targetY, targetZ = getWorldTranslation(g_fieldManager.fields[xField].mapHotspot);
+				targetX, targetY, targetZ = getWorldTranslation(g_fieldManager.fields[x].mapHotspot);
 			else
 				return;
 			end;
 		else
 			local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
 			local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
-			targetX = MathUtil.clamp(xField, 0, worldSizeX) - worldSizeX * 0.5;
+			targetX = MathUtil.clamp(x, 0, worldSizeX) - worldSizeX * 0.5;
 			targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
 		end
-    else
+    elseif isHotspot then
+		targetX = x;
+		targetZ = z;
+	else
 		targetX, targetY, targetZ = getWorldTranslation(g_currentMission.controlledVehicle.rootNode);
 	end
 	
@@ -450,40 +507,131 @@ function Tardis:Freeze(setFreeze)
 
 end
 
---- client/server event part---
-TardisEvent = {};
-TardisEvent_mt = Class(TardisEvent, Event);
+function Tardis:useOrSetHotspot(hotspotId)
+	Tardis:dp(string.format('hotspotId: {%d}', hotspotId), 'useOrSetHotspot');
+	if Tardis.hotspots[hotspotId] ~= nil then
 
-InitEventClass(TardisEvent, "TardisEvent");
+		local x = Tardis.hotspots[hotspotId]['xMapPos'];
+		local z = Tardis.hotspots[hotspotId]['zMapPos'];
+		Tardis:dp(string.format('Hotspot {%d} exists. Teleporting now to: x {%s}, z {%s}', hotspotId, tostring(x), tostring(z)), 'createMapHotspot');
+		Tardis:teleportToLocation(x, z, nil, false, true);
+	else
+		Tardis:createMapHotspot(hotspotId);
+	end
+end
 
-function TardisEvent:emptyNew()
-    local self = Event:new(TardisEvent_mt);
-    return self;
-end;
+function Tardis:createMapHotspot(hotspotId, paramX, paramZ)
+	Tardis:dp(string.format('Going to create mapHotspot {%d}', hotspotId), 'createMapHotspot');
+	local x = paramX;
+	local y = nil;
+	local z = paramZ;
+	
+	local name = string.format('%s %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId);
+	local hotspot = MapHotspot:new(name,  MapHotspot.CATEGORY_MISSION);
+	
+	if x == nil and z == nil then
+		x, y, z = getWorldTranslation(g_currentMission.player.rootNode);
+	end
+	hotspot:setWorldPosition(x, z);
+	
+	hotspot:setImage(nil, getNormalizedUVs(MapHotspot.UV.FARM_HOUSE), {0.0044, 0.15, 0.6376, 1})
+	hotspot:setBackgroundImage(nil, getNormalizedUVs(MapHotspot.UV.FARM_HOUSE));
+	
+	g_currentMission:addMapHotspot(hotspot);
+	
+	Tardis.hotspots[hotspotId] = hotspot;
+	-- if there is a paramX and paramZ it means we got it from the savegame, so no need for a blinking warning
+	if paramX == nil and paramZ == nil then
+		Tardis:showBlinking(hotspotId, 1);
+	end
+end
 
-function TardisEvent:new(xField, z, vehicle)
-    local self = TardisEvent:emptyNew()
-    self.xField = xField;
-    self.z = z;
-    self.vehicle = vehicle
-    return self;
-end;
+function Tardis:removeMapHotspot(hotspotId)
+	g_currentMission:removeMapHotspot(Tardis.hotspots[hotspotId]);
+	Tardis.hotspots[hotspotId] = nil;
+	Tardis:showBlinking(hotspotId, 2);
+end
 
-function TardisEvent:readStream(streamId, connection)
-    self.xField = streamReadFloat32(streamId);
-    self.z = streamReadFloat32(streamId);
-    self.vehicle = readNetworkNodeObject(streamId);
-    self:run(connection);
-end;
+function Tardis:saveHotspots(missionInfo)
+	if #Tardis.hotspots > 0 then
 
-function TardisEvent:writeStream(streamId, connection)
-    streamWriteFloat32(streamId, self.xField);
-    streamWriteFloat32(streamId, self.z);
-    writeNetworkNodeObject(streamId, self.vehicle);
-end;
+	    if missionInfo.isValid and missionInfo.xmlKey ~= nil then
+			local tardisKey = missionInfo.xmlKey .. ".TardisHotspots";
 
-function TardisEvent:run(connection)
-    if not connection:getIsServer() then
-        g_currentMission.TardisBase:teleportToLocation(self.xField, self.z, self.vehicle);
-    end;
-end;
+			for k, v in pairs(Tardis.hotspots) do
+				setXMLFloat(missionInfo.xmlFile, tardisKey .. '.hotspot' .. k .. '#xMapPos' , v.xMapPos);
+				setXMLFloat(missionInfo.xmlFile, tardisKey .. '.hotspot' .. k .. '#zMapPos' , v.zMapPos);
+			end
+		end
+	end
+end
+
+function Tardis:loadHotspots()
+    if g_currentMission == nil or not g_currentMission:getIsServer() then return end
+
+	--    if g_currentMission.missionInfo.isValid then
+	
+	local xmlFile = Utils.getFilename("careerSavegame.xml", g_currentMission.missionInfo.savegameDirectory.."/");
+	local savegame = loadXMLFile('careerSavegameXML', xmlFile);
+    local tardisKey = g_currentMission.missionInfo.xmlKey .. ".TardisHotspots";
+
+	Tardis:dp(string.format('Going to load {%s} from {%s}', tardisKey, xmlFile), 'loadHotspots');
+
+	if hasXMLProperty(savegame, tardisKey) then
+		Tardis:dp(string.format('{%s} exists.', tardisKey), 'loadHotspots');
+			
+		for i=1, 5 do
+			local hotspotKey = tardisKey .. '.hotspot' .. i;
+			if hasXMLProperty(savegame, hotspotKey) then
+				local xMapPos = getXMLFloat(savegame, hotspotKey .. "#xMapPos");
+				local zMapPos = getXMLFloat(savegame, hotspotKey .. "#zMapPos");
+				Tardis:dp(string.format('Loaded MapHotSpot {%d} from savegame. xMapPos {%s}, zMapPos {%s}', i, tostring(xMapPos), tostring(zMapPos)), 'loadHotspots');
+				Tardis:createMapHotspot(i, xMapPos, zMapPos);
+			end
+		end
+	end
+
+end
+
+function Tardis.loadedMission()
+	Tardis:loadHotspots();
+end
+
+function Tardis.saveToXMLFile(missionInfo)
+	Tardis:saveHotspots(missionInfo);
+end
+
+-- it would be nicer to do that with triggers if possible. But it should do the job for now
+function Tardis:hotspotNearby()
+	local range = 25;
+	
+	local playerX, _, playerZ = getWorldTranslation(g_currentMission.player.rootNode);
+	local hotspotNearby = false;
+
+	for k, v in pairs(Tardis.hotspots) do
+		local hsX = v.xMapPos;
+		local hsZ = v.zMapPos;
+		if (playerX >= (hsX - range) and playerX <= (hsX + range)) and (playerZ >= (hsZ - range) and playerZ <= (hsZ + range)) then
+			Tardis:dp(string.format('Hotspot {%d} nearby', k), 'hotspotNearby');
+			return k;
+		end
+	end
+	
+	return 0;
+end
+
+function Tardis:showBlinking(hotspotId, action)
+	--action: 1 created, 2 deleted, 3 nohotspots
+	local text = '';
+	if action == 1 then
+		text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_created);		
+	elseif action == 2 then
+		text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_deleted);
+	elseif action == 3 then
+		text = g_i18n.modEnvironments[Tardis.ModName].texts.warning_nohotspot;
+	end
+	g_currentMission:showBlinkingWarning(text, 2000);
+end
+
+Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, Tardis.loadedMission)
+FSCareerMissionInfo.saveToXMLFile = Utils.appendedFunction(FSCareerMissionInfo.saveToXMLFile, Tardis.saveToXMLFile)

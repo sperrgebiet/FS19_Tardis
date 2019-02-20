@@ -2,7 +2,7 @@
 **This is a revamp of the good old Tardis from FS17**
 
 For beginners: With Tardis you can teleport yourself or your vehicles to any location on the map.
-Besides that it has a couple of additional functionality. See below.
+Besides that it has a couple of additional functionalities. See below.
 
 Feedback, this readme and additional information incl. source code can be find at: https://github.com/sperrgebiet/FS19_Tardis
 
@@ -10,12 +10,15 @@ Feedback, this readme and additional information incl. source code can be find a
 [Latest version](https://github.com/sperrgebiet/FS19_Tardis/blob/master/FS19_Tardis.zip?raw=true)
 
 ### Features
-* BLAH
+* Teleport yourself (the player) to any location on the map
+* Enter a vehicle to teleport yourself AND the vehicle (incl. implements, trailers) to any location on the map
+* Reset a crashed/turned over vehicle. Reset in this case means to turn it over again
+* Set up to 5 map hotspots to easily teleport yourself and/or vehicles to one of those spots. Those hotspots obviously get saved & restored.
+* Integration with Vehicle Explorer (https://github.com/sperrgebiet/FS19_VehicleExplorer)
   
 
 ### Known issues
-* BLAH
-  * SUBBLAH
+* You can't teleport goods like pallets on a trailer. Filllevels work though
 
 
 ### Incompatible Mods
@@ -24,6 +27,8 @@ Feedback, this readme and additional information incl. source code can be find a
 ## Default Keybinding
 LAlt + t -> tardis on
 LAlt + Backspace -> Reset
+LAlt + LShift + KeyPad 1 - 5 -> Set or visit the map hotspot
+LAlt + LShift + Backspace -> Delete a map hotspot in a 25m range
 
 Mouse Left: Teleport
 
@@ -33,19 +38,19 @@ Quite frankly, I've no idea about the MP code needed and also no possibility to 
 the MP setting in the moddesc.xml from false to true. I assume just the parking possibility has an impact to MP.
 
 ## Credits
-TBD
+TyKonKet, fcelsa for Tardis on FS17. That brought the idea and the initial code base. Although the majority was altered for this FS19 version.
 Also Kudos to the guys and gals from CoursePlay, VehicleInspector, VehicleFruitHud, EnhancedVehicle and many more for some inspiration and ideas.
 Additionally Ifko[nator] for the RegisterSpecialization script.
 
 
 ## Latest Version
-0.9.0.0 - I consider it as Beta. I tested it quite a lot myself, but hope for some helpful feedback from the community.
+0.9.1.0 - I consider it as Beta. I tested it quite a lot myself, but hope for some helpful feedback from the community.
 
 -----
 
 
 # Tardis für LS19 aka VeEx19
-**Dies ist eine Reinkarnation von VehicleSort aus LS17**
+**Dies ist eine Reinkarnation von Tardis aus LS17**
 
 Für Neueinsteiger: Mit Tardis kannst du dich selbst oder eines deiner Fahrzeuge zu jeder Lokation teleportieren.
 
@@ -55,19 +60,24 @@ Feedback, dieses ReadMe und weitere Informationen sowie der Quelltext findet sic
 [Letzte Version](https://github.com/sperrgebiet/FS19_Tardis/blob/master/FS19_Tardis.zip?raw=true)
 
 ### Funktionen
-* BLAH
+* Teleportiere dich (den Spieler) an jeden Ort auf der Karte
+* Besteige ein Fahrzeug um dich UND das Fahrzeug (inkl. angehängter Geräte, Anhänger) an jeden Ort zu teleportieren
+* Wieder aufrichten von umgekippten Fahrzeugen
+* Setze bis zu 5 Hotspots auf der Karte um dich und/oder Fahrzeuge an diese Orte zu teleportieren. Diese werden natürlich gespeichert und geladen.
+* Integration mit VehicleExplorer (https://github.com/sperrgebiet/FS19_VehicleExplorer)
 
 
 ### Bekannte Probleme
-* BLAH
-  * SUB BLAH
+* Man kann keine Güter wie Paletten teleportieren. Inhalte von Anhängern (Filllevels) funktioniert jedoch.
 
 ### Inkompatible Mods
 * Keine bekannt
 
 ## Standard Tastenbelegung
-LAlt + t -> Tardis ein
+LAlt + t -> Tardis ein (funktioniert nur auf der MiniMap)
 LAlt + Rücktaste -> Fahrzeug aufrichten
+LAlt + LUmschalt + NumPad 1 - 5: Setzen/besuchen der Hotspots
+LAlt + LUmschalt + Rücktaste: Löschen eines Mapspots in der Nähe (25m).
 
 Linke Maustaste: An diese Position teleportieren
 
@@ -77,21 +87,13 @@ Ehrlich gesagt habe ich keine Ahnung was für MP Code notwendig wäre und auch k
 Ich glaube nur das parken von Fahrzeugen sollte einen Einfluss auf MP haben.
 
 ## Credits
-TBD
+TyKonKet, fcelsa für Tardis in LS17. Initiale Idee und Logik, wenn auch der Grossteil des Codes mittlerweile geändert wurde.
 Auch Kudos an die Jungs und Mädls von CoursePlay, VehicleInspector, VehicleFruitHud, EnhancedVehicle und vielen anderen für Inspirationen und Ideen.
 Des weiteren noch Ifko[nator] für das RegisterSpecialization Skript.
 
 ## Letzte Version
-0.9.0.7 - I würd mal sagen dies ist noch eine Beta. Ich hab zwar selbst recht viel getestet, hoffe aber auf hilfreiche Rückmeldungen von der Community.
+0.9.1.0 - I würd mal sagen dies ist noch eine Beta. Ich hab zwar selbst recht viel getestet, hoffe aber auf hilfreiche Rückmeldungen von der Community.
 
 
 # Screenshots
-![fsscreen1](https://user-images.githubusercontent.com/20586786/52771954-986b1580-3037-11e9-8e0a-470cdd3c3855.png)
-![fsscreen2](https://user-images.githubusercontent.com/20586786/52771955-986b1580-3037-11e9-9880-8c9cb681538d.png)
-![fsscreen3](https://user-images.githubusercontent.com/20586786/52771956-986b1580-3037-11e9-999a-7a1c52a57298.png)
-![fsscreen4](https://user-images.githubusercontent.com/20586786/52771957-986b1580-3037-11e9-9b32-f98a17d1ef75.png)
-![fsscreen5](https://user-images.githubusercontent.com/20586786/52771958-9903ac00-3037-11e9-8083-a22a3c1f8468.png)
-![fsscreen6](https://user-images.githubusercontent.com/20586786/52771959-9903ac00-3037-11e9-9d49-59c586aa82dd.png)
-![fsscreen7](https://user-images.githubusercontent.com/20586786/52771960-9903ac00-3037-11e9-8afc-284196ea6c9a.png)
-![fsscreen8](https://user-images.githubusercontent.com/20586786/52771961-9903ac00-3037-11e9-876c-3bb01aa0cd06.png)
-![fsscreen9](https://user-images.githubusercontent.com/20586786/52771962-999c4280-3037-11e9-81b1-a6bb0b2fc38d.png)
+
