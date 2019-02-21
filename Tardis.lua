@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.0";
+Tardis.Version = "0.9.1.1";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -229,7 +229,7 @@ function Tardis:draw()
         end
 		
 		if Tardis.mousePos[1] > ovrlX then
-            px = -(string.len(name) * 0.005) - 0.03;
+            --px = -(string.len(name) * 0.005) - 0.03;
         end
 
         if Tardis.mousePos[2] > ovrlY then
@@ -408,14 +408,16 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
             local x, y, z = getWorldTranslation(vehicle.rootNode);
             table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(theVehicle.rootNode, x, y, z)}});
             
-			if #vehicle:getAttachedImplements() > 0 then
-				for _, impl in pairs(vehicle:getAttachedImplements()) do
-					addVehiclePositions(impl.object);
-					table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.spec_attachable.inputAttacherJointDescIndex});
-				end
-				
-				for i = table.getn(vehicle:getAttachedImplements()), 1, -1 do
-					vehicle:detachImplement(1, true);
+			if not Tardis:isHorse(theVehicle) then
+				if #vehicle:getAttachedImplements() > 0 then
+					for _, impl in pairs(vehicle:getAttachedImplements()) do
+						addVehiclePositions(impl.object);
+						table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.spec_attachable.inputAttacherJointDescIndex});
+					end
+					
+					for i = table.getn(vehicle:getAttachedImplements()), 1, -1 do
+						vehicle:detachImplement(1, true);
+					end
 				end
 			end
 
@@ -472,6 +474,10 @@ end
 
 function Tardis:isTrain(obj)
 	return obj['typeName'] == 'locomotive';
+end
+
+function Tardis:isHorse(obj)
+	return obj['typeName'] == 'horse';
 end
 
 function Tardis:Freeze(setFreeze)
