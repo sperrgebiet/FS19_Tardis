@@ -34,7 +34,14 @@ if($srcPath.Length -gt 0 -and $dstPath.Length -gt 0)
         }
     }
 
-    Compress-Archive -Path (Join-Path $tmpPath "\*") -DestinationPath (Join-Path $dstPath $dstFilename)
+    ##Compress-Archive -Path (Join-Path $tmpPath "\*") -DestinationPath (Join-Path $dstPath $dstFilename)
+	# For some reason neither PS nor the .NET libraries create an archive suitable for FS19. the translations folder is included, but not used by the Giants engine
+	# Switching to a quick and dirty Winrar solution for now
+	$binary = "C:\Program Files\winrar\WinRAR.exe"
+    $folder = Join-Path $tmpPath "\*"
+    $file = Join-Path $dstPath $dstFilename
+	$rarargs = @("a", "-afzip -ep1 -r", "`"$file`"", "`"$($folder)`"" )
+	Start-Process -FilePath $binary -ArgumentList $rarargs -Wait
 
     Remove-Item -Path $tmpPath -Recurse -Force
 }

@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.1";
+Tardis.Version = "0.9.1.2";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -54,7 +54,7 @@ function Tardis:loadMap(name)
 	FSBaseMission.registerActionEvents = Utils.appendedFunction(FSBaseMission.registerActionEvents, Tardis.registerActionEvents);
 	Player.registerActionEvents = Utils.appendedFunction(Player.registerActionEvents, Tardis.registerActionEventsPlayer);
 	
-	Tardis.tardisOn = false;
+	Tardis.TardisActive = false;
     Tardis.mousePos = {0.5, 0.5};
     Tardis.worldXpos = 0;
     Tardis.worldZpos = 0;
@@ -119,7 +119,7 @@ end
 
 function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
 	--Tardis:dp(string.format('posX {%s) posY {%s}', posX, posY));
-    if Tardis.tardisOn then
+    if Tardis.isActionAllowed() then
         local mOX = g_currentMission.hud.ingameMap.mapPosX;
         local mOY = g_currentMission.hud.ingameMap.mapPosY;
         if posX >= mOX and posX <= mOX + g_currentMission.hud.ingameMap.mapWidth then
@@ -133,13 +133,13 @@ function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
 			if not g_currentMission:getIsServer() and g_currentMission.controlledVehicle then
                 local xField = Tardis.worldXpos * g_currentMission.terrainSize;
                 local z = Tardis.worldZpos * g_currentMission.terrainSize;
-                local theVehicle = g_currentMission.controlledVehicle;
-				g_client:getServerConnection():sendEvent(tardisEvent:new(xField, z, theVehicle));
+                local veh = g_currentMission.controlledVehicle;
+				g_client:getServerConnection():sendEvent(tardisEvent:new(xField, z, veh));
 			else
 				--Tardis:dp(string.format('telePort param1 {%s} - param2 {%s}', Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize));
 				Tardis:teleportToLocation(Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize);
 			end
-            Tardis.tardisOn = false;
+            Tardis.TardisActive = false;
             g_inputBinding:setShowMouseCursor(false);
         end;
         Tardis.mousePos[1] = posX;
@@ -148,7 +148,7 @@ function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
 end
 
 function Tardis:draw()
-	if Tardis.tardisOn then
+	if Tardis.TardisActive then
 	    --local ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapWidth / 2;
 		--local ovrlX = g_currentMission.hud.ingameMap.mapPosX + g_currentMission.hud.ingameMap.mapOffsetX + getTextWidth(g_currentMission.hud.ingameMap.mapLabelTextSize, g_currentMission.hud.ingameMap.mapLabelText);
 		--local ovrlX = g_currentMission.hud.ingameMap.mapPosX + getTextWidth(g_currentMission.hud.ingameMap.mapLabelTextSize, g_currentMission.hud.ingameMap.mapLabelText);
@@ -157,30 +157,30 @@ function Tardis:draw()
         local px = 0.01;
         local py = 0.005;	
 		local name;
-		local theVehicle;
+		local veh;
 		local drawImage = false;		--There are so many cases where we don't want to draw a image, so easier to just set it to true in case it's the currently controlled vehicle
 		
-		if envVeEx ~= nil and envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
+		if envVeEx ~= nil and envVeEx.VehicleSort.showVehicles and envVeEx.VehicleSort.config[22][2] then
 			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
 			if realVeh ~= nil then
-				theVehicle = realVeh;
+				veh = realVeh;
 			end
 		elseif g_currentMission.controlledVehicle ~= nil then
-			theVehicle = g_currentMission.controlledVehicle;
+			veh = g_currentMission.controlledVehicle;
 			drawImage = true;
 		end
 		
-		if theVehicle ~= nil then
+		if veh ~= nil then
 			--Get image size
 			local storeImgX, storeImgY = getNormalizedScreenValues(128, 128)
 				
 			if drawImage then
-				Tardis:DrawImage(theVehicle, ovrlX, ovrlY)
+				Tardis:DrawImage(veh, ovrlX, ovrlY)
 			end
 			
-			name = theVehicle:getName();
+			name = veh:getName();
 			
-			if theVehicle.getAttachedImplements ~= nil then
+			if veh.getAttachedImplements ~= nil then
                 local allAttached = {}
                 local function addAllAttached(vehicle)
                     for _, implA in pairs(vehicle:getAttachedImplements()) do
@@ -189,7 +189,7 @@ function Tardis:draw()
                     end
                 end
                 
-                addAllAttached(theVehicle);
+                addAllAttached(veh);
                 
                 for i = table.getn(allAttached), 1, -1 do
 					if drawImage then
@@ -201,23 +201,23 @@ function Tardis:draw()
             end
 		end
 		
-		if theVehicle and Tardis:isTrain(theVehicle) then
+		if veh and Tardis:isTrain(veh) then
 			g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_train, 2000);
-            name = theVehicle:getName();
+            name = veh:getName();
         end
 		
-		if theVehicle and Tardis:isCrane(theVehicle) then
+		if veh and Tardis:isCrane(veh) then
 			g_currentMission:showBlinkingWarning(g_i18n.modEnvironments[Tardis.ModName].texts.warning_crane, 2000);
-            name = theVehicle:getName();
+            name = veh:getName();
         end		
 		
 		if name == nil or string.len(name) == 0 then
 			name = string.format('%s %s', g_i18n.modEnvironments[Tardis.ModName].texts.lonelyFarmer, g_gameSettings.nickname);
 		end
 		
-		if theVehicle and theVehicle.spec_combine ~= nil and theVehicle.getFillLevelInformation ~= nil then
+		if veh and veh.spec_combine ~= nil and veh.getFillLevelInformation ~= nil then
 			local fillLevelTable = {};
-			theVehicle:getFillLevelInformation(fillLevelTable);
+			veh:getFillLevelInformation(fillLevelTable);
 			
 			for _,fillLevelVehicle in pairs(fillLevelTable) do
 				fillLevel = fillLevelVehicle.fillLevel;
@@ -257,7 +257,7 @@ end
 
 function Tardis:action_tardis_showTardisCursor(actionName, keyStatus, arg3, arg4, arg5)
 	Tardis:dp(string.format('%s fires', actionName));
-	Tardis:ShowTardis();
+	Tardis:showTardis();
 end
 
 function Tardis:action_tardis_resetVehicle(actionName, keyStatus, arg3, arg4, arg5)
@@ -310,40 +310,31 @@ end
 -- Tardis specific functions
 --
 
-function Tardis:InitTardis()
-	Tardis.paddingX = 0.01;
-	Tardis.paddingY = 0.005;
-	Tardis.overlayX = g_currentMission.inGameMenu.hud.ingameMap.mapWidth / 2;
-	Tardis.overlayY = g_currentMission.inGameMenu.hud.ingameMap.mapHeight / 2;
-	Tardis.playerName = g_gameSettings.nickname;
-end
-
-
-function Tardis:ShowTardis()
+function Tardis:showTardis()
 
     if (g_currentMission.hud.ingameMap.isVisible and g_currentMission.hud.ingameMap.state == IngameMap.STATE_MAP) then
-		Tardis.tardisOn = not Tardis.tardisOn;
-		if Tardis.tardisOn then
+		Tardis.TardisActive = not Tardis.TardisActive;
+		if Tardis.TardisActive then
 			g_inputBinding:setShowMouseCursor(true);
 			Tardis:Freeze(true);
 			
 			--It's getting confusing when we want to use Tardis and VehicleExplorer at the same but, although the integration was disabled
 			--So better to close the vehicle list from VeEx in that case
-			if envVeEx ~= nil and not envVeEx.VehicleSort.config[22][2] and envVeEx.VehicleSort.showSteerables then
-				envVeEx.VehicleSort.showSteerables = false;
+			if envVeEx ~= nil and not envVeEx.VehicleSort.config[22][2] and envVeEx.VehicleSort.showVehicles then
+				envVeEx.VehicleSort.showVehicles = false;
 			end
 		else
-			Tardis.tardisOn = false;
+			Tardis.TardisActive = false;
 			g_inputBinding:setShowMouseCursor(false);
 			Tardis:Freeze(false);
 		end
-	elseif Tardis.tardisOn then
-		Tardis.tardisOn = false;
+	elseif Tardis.TardisActive then
+		Tardis.TardisActive = false;
 		g_inputBinding:setShowMouseCursor(false);
     end
 end
 
-function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
+function Tardis:teleportToLocation(x, z, veh, isReset, isHotspot)
 
     x = tonumber(x);
     z = tonumber(z);
@@ -351,24 +342,24 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
         return;
     end;
 
-	if envVeEx ~= nil and theVehicle == nil then
-		if envVeEx.VehicleSort.showSteerables and envVeEx.VehicleSort.config[22][2] then
+	if envVeEx ~= nil and veh == nil then
+		if envVeEx.VehicleSort.showVehicles and envVeEx.VehicleSort.config[22][2] then
 			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
 			if realVeh ~= nil then
-				theVehicle = realVeh;
-				if theVehicle ~= g_currentMission.controlledVehicle then
+				veh = realVeh;
+				if veh ~= g_currentMission.controlledVehicle then
 					envVeEx.VehicleSort.wasTeleportAction = true;
 				end
 			end
 		end
 	end
 	
-	if theVehicle == nil then
-		theVehicle = g_currentMission.controlledVehicle;
+	if veh == nil then
+		veh = g_currentMission.controlledVehicle;
 	end
 
 	-- We don't want to teleport cranes or trains
-	if theVehicle ~= nil and (Tardis:isTrain(theVehicle) or Tardis:isCrane(theVehicle)) then
+	if veh ~= nil and (Tardis:isTrain(veh) or Tardis:isCrane(veh)) then
 		Tardis:Freeze(false);
 		return false;
 	end
@@ -376,18 +367,10 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
 	local targetX, targetY, targetZ = 0, 0, 0;
 	
     if not isReset and not isHotspot then	
-		if z == nil then
-			if g_fieldManager.fields ~= nil then
-				targetX, targetY, targetZ = getWorldTranslation(g_fieldManager.fields[x].mapHotspot);
-			else
-				return;
-			end;
-		else
-			local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
-			local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
-			targetX = MathUtil.clamp(x, 0, worldSizeX) - worldSizeX * 0.5;
-			targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
-		end
+		local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
+		local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
+		targetX = MathUtil.clamp(x, 0, worldSizeX) - worldSizeX * 0.5;
+		targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
     elseif isHotspot then
 		targetX = x;
 		targetZ = z;
@@ -397,7 +380,7 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
 	
 	Tardis:dp(string.format('targetX {%s} - targetZ {%s}', tostring(targetX), tostring(targetZ)), 'teleportToLocation');
 	
-    if theVehicle == nil and not isReset then
+    if veh == nil and not isReset then
 		g_currentMission.player:moveTo(targetX, 0.5, targetZ, false, false);
 		Tardis:Freeze(false);
     else
@@ -406,9 +389,9 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
 
         local function addVehiclePositions(vehicle)
             local x, y, z = getWorldTranslation(vehicle.rootNode);
-            table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(theVehicle.rootNode, x, y, z)}});
+            table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(veh.rootNode, x, y, z)}});
             
-			if not Tardis:isHorse(theVehicle) then
+			if not Tardis:isHorse(veh) then
 				if #vehicle:getAttachedImplements() > 0 then
 					for _, impl in pairs(vehicle:getAttachedImplements()) do
 						addVehiclePositions(impl.object);
@@ -424,12 +407,12 @@ function Tardis:teleportToLocation(x, z, theVehicle, isReset, isHotspot)
 			vehicle:removeFromPhysics();
         end
         
-        addVehiclePositions(theVehicle);
+        addVehiclePositions(veh);
         
         for k, data in pairs(vehicles) do
             local x, y, z = targetX, targetY, targetZ;
             if k > 1 then
-                x, _, z = localToWorld(theVehicle.rootNode, unpack(data.offset));
+                x, _, z = localToWorld(veh.rootNode, unpack(data.offset));
             end;
             local _, ry, _ = getWorldRotation(data.vehicle.rootNode);
             data.vehicle:setRelativePosition(x, 0.5, z, ry, true);
@@ -637,6 +620,15 @@ function Tardis:showBlinking(hotspotId, action)
 		text = g_i18n.modEnvironments[Tardis.ModName].texts.warning_nohotspot;
 	end
 	g_currentMission:showBlinkingWarning(text, 2000);
+end
+
+function Tardis:isActionAllowed()
+	-- We don't want to accidently switch vehicle when the vehicle list is opened and we change to a menu
+	if string.len(g_gui.currentGuiName) > 0 or #g_gui.dialogs > 0 then
+		return false;
+	elseif Tardis.TardisActive then
+		return true;
+	end
 end
 
 Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, Tardis.loadedMission)
