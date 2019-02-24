@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.2";
+Tardis.Version = "0.9.1.3";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -558,24 +558,24 @@ end
 function Tardis:loadHotspots()
     if g_currentMission == nil or not g_currentMission:getIsServer() then return end
 
-	--    if g_currentMission.missionInfo.isValid then
-	
-	local xmlFile = Utils.getFilename("careerSavegame.xml", g_currentMission.missionInfo.savegameDirectory.."/");
-	local savegame = loadXMLFile('careerSavegameXML', xmlFile);
-    local tardisKey = g_currentMission.missionInfo.xmlKey .. ".TardisHotspots";
+	if g_currentMission.missionInfo.savegameDirectory ~= nil then
+		local xmlFile = Utils.getFilename("careerSavegame.xml", g_currentMission.missionInfo.savegameDirectory.."/");
+		local savegame = loadXMLFile('careerSavegameXML', xmlFile);
+		local tardisKey = g_currentMission.missionInfo.xmlKey .. ".TardisHotspots";
 
-	Tardis:dp(string.format('Going to load {%s} from {%s}', tardisKey, xmlFile), 'loadHotspots');
+		Tardis:dp(string.format('Going to load {%s} from {%s}', tardisKey, xmlFile), 'loadHotspots');
 
-	if hasXMLProperty(savegame, tardisKey) then
-		Tardis:dp(string.format('{%s} exists.', tardisKey), 'loadHotspots');
-			
-		for i=1, 5 do
-			local hotspotKey = tardisKey .. '.hotspot' .. i;
-			if hasXMLProperty(savegame, hotspotKey) then
-				local xMapPos = getXMLFloat(savegame, hotspotKey .. "#xMapPos");
-				local zMapPos = getXMLFloat(savegame, hotspotKey .. "#zMapPos");
-				Tardis:dp(string.format('Loaded MapHotSpot {%d} from savegame. xMapPos {%s}, zMapPos {%s}', i, tostring(xMapPos), tostring(zMapPos)), 'loadHotspots');
-				Tardis:createMapHotspot(i, xMapPos, zMapPos);
+		if hasXMLProperty(savegame, tardisKey) then
+			Tardis:dp(string.format('{%s} exists.', tardisKey), 'loadHotspots');
+				
+			for i=1, 5 do
+				local hotspotKey = tardisKey .. '.hotspot' .. i;
+				if hasXMLProperty(savegame, hotspotKey) then
+					local xMapPos = getXMLFloat(savegame, hotspotKey .. "#xMapPos");
+					local zMapPos = getXMLFloat(savegame, hotspotKey .. "#zMapPos");
+					Tardis:dp(string.format('Loaded MapHotSpot {%d} from savegame. xMapPos {%s}, zMapPos {%s}', i, tostring(xMapPos), tostring(zMapPos)), 'loadHotspots');
+					Tardis:createMapHotspot(i, xMapPos, zMapPos);
+				end
 			end
 		end
 	end
