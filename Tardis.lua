@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.3";
+Tardis.Version = "0.9.1.4";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -86,7 +86,11 @@ function Tardis:registerActionEvents(isSelected, isOnActiveVehicle)
 		local result, eventName = InputBinding.registerActionEvent(g_inputBinding, action, self, Tardis[actionMethod], false, true, false, true)
 		if result then
 			table.insert(Tardis.eventName, eventName);
-			g_inputBinding.events[eventName].displayIsVisible = true;
+			if envVeEx ~= nil and VehicleSort.config[13][2] then
+				g_inputBinding.events[eventName].displayIsVisible = true;
+			else
+				g_inputBinding.events[eventName].displayIsVisible = false;
+			end
 		end
 	end
 		
@@ -109,7 +113,11 @@ function Tardis:onRegisterActionEvents(isSelected, isOnActiveVehicle)
 	local result, eventName = InputBinding.registerActionEvent(g_inputBinding, 'tardis_resetVehicle',self, Tardis.action_tardis_resetVehicle ,false ,true ,false ,true)
 	if result then
 		table.insert(Tardis.eventName, eventName);
-		g_inputBinding.events[eventName].displayIsVisible = true;
+		if envVeEx ~= nil and VehicleSort.config[13][2] then
+			g_inputBinding.events[eventName].displayIsVisible = true;
+		else
+			g_inputBinding.events[eventName].displayIsVisible = false;
+		end
     end
 		
 end
