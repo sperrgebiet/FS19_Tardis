@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="42">
+<modDesc descVersion="46">
 	<author>sperrgebiet</author>
-	<version>0.9.1.4</version>
+	<version>0.9.1.6</version>
 	<title>Tardis Teleport</title>
 	<description>
 		<en>
@@ -43,6 +43,10 @@
 		<action name="tardis_useHotspot3" axisType="HALF" />
 		<action name="tardis_useHotspot4" axisType="HALF" />
 		<action name="tardis_useHotspot5" axisType="HALF" />
+		<action name="tardis_useHotspot6" axisType="HALF" />
+		<action name="tardis_useHotspot7" axisType="HALF" />
+		<action name="tardis_useHotspot8" axisType="HALF" />
+		<action name="tardis_useHotspot9" axisType="HALF" />
 		<action name="tardis_deleteHotspot" axisType="HALF" />
 	</actions>
 	<inputBinding>	
@@ -66,6 +70,18 @@
 		</actionBinding>
 		<actionBinding action="tardis_useHotspot5">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_clear" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot6">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_6" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot7">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_7" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot8">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_8" index="1" />
+		</actionBinding>
+		<actionBinding action="tardis_useHotspot9">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_KP_9" index="1" />
 		</actionBinding>
 		<actionBinding action="tardis_deleteHotspot">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_backspace" index="1" />
@@ -124,6 +140,22 @@
 		<text name="input_tardis_useHotspot5">
 			<de>Tardis: Ort 5</de>
 			<en>Tardis: Spot 5</en>
+		</text>
+		<text name="input_tardis_useHotspot6">
+			<de>Tardis: Ort 6</de>
+			<en>Tardis: Spot 6</en>
+		</text>	
+		<text name="input_tardis_useHotspot7">
+			<de>Tardis: Ort 7</de>
+			<en>Tardis: Spot 7</en>
+		</text>	
+		<text name="input_tardis_useHotspot8">
+			<de>Tardis: Ort 8</de>
+			<en>Tardis: Spot 8</en>
+		</text>	
+		<text name="input_tardis_useHotspot9">
+			<de>Tardis: Ort 9</de>
+			<en>Tardis: Spot 9</en>
 		</text>	
 		<text name="input_tardis_deleteHotspot">
 			<de>Tardis: Lösche Hotspot im Umkreis</de>

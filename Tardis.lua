@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.4";
+Tardis.Version = "0.9.1.6";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -78,6 +78,10 @@ function Tardis:registerActionEvents(isSelected, isOnActiveVehicle)
 					"tardis_useHotspot3",
 					"tardis_useHotspot4",
 					"tardis_useHotspot5",
+					"tardis_useHotspot6",
+					"tardis_useHotspot7",
+					"tardis_useHotspot8",
+					"tardis_useHotspot9",
 					"tardis_deleteHotspot"
 				};
 
@@ -300,6 +304,26 @@ end
 function Tardis:action_tardis_useHotspot5(actionName, keyStatus, arg3, arg4, arg5)
 	Tardis:dp(string.format('%s fires', actionName));
 	Tardis:useOrSetHotspot(5);
+end
+
+function Tardis:action_tardis_useHotspot6(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(6);
+end
+
+function Tardis:action_tardis_useHotspot7(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(7);
+end
+
+function Tardis:action_tardis_useHotspot8(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(8);
+end
+
+function Tardis:action_tardis_useHotspot9(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	Tardis:useOrSetHotspot(9);
 end
 
 function Tardis:action_tardis_deleteHotspot(actionName, keyStatus, arg3, arg4, arg5)
@@ -576,7 +600,7 @@ function Tardis:loadHotspots()
 		if hasXMLProperty(savegame, tardisKey) then
 			Tardis:dp(string.format('{%s} exists.', tardisKey), 'loadHotspots');
 				
-			for i=1, 5 do
+			for i=1, 9 do
 				local hotspotKey = tardisKey .. '.hotspot' .. i;
 				if hasXMLProperty(savegame, hotspotKey) then
 					local xMapPos = getXMLFloat(savegame, hotspotKey .. "#xMapPos");
