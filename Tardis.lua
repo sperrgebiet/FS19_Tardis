@@ -17,6 +17,9 @@ Tardis.hotspots = {};
 
 Tardis.debug = fileExists(Tardis.ModDirectory ..'debug');
 
+-- Load MP source files
+source(Tardis.ModDirectory .. "TardisEvents.lua");
+
 print(string.format('Tardis v%s - DebugMode %s)', Tardis.Version, tostring(Tardis.debug)));
 
 addModEventListener(Tardis);
@@ -142,14 +145,17 @@ function Tardis:mouseEvent(posX, posY, isDown, isUp, button)
         end;
         if isDown and button == Input.MOUSE_BUTTON_LEFT then
 			Tardis:dp(string.format('posX {%s} posY {%s} - mOX {%s} mOY {%s} - worldXpos {%s} worldZpos {%s}', posX, posY, mOX, mOY, Tardis.worldXpos, Tardis.worldZpos));
-			if not g_currentMission:getIsServer() and g_currentMission.controlledVehicle then
-                local xField = Tardis.worldXpos * g_currentMission.terrainSize;
-                local z = Tardis.worldZpos * g_currentMission.terrainSize;
+
+			local posX = Tardis.worldXpos * g_currentMission.terrainSize;
+			local posZ = Tardis.worldZpos * g_currentMission.terrainSize;
+
+			if g_currentMission.controlledVehicle then
                 local veh = g_currentMission.controlledVehicle;
-				g_client:getServerConnection():sendEvent(tardisEvent:new(xField, z, veh));
+				Tardis:teleportToLocation(posX, posZ, veh, false, false, false)
+				TardisTeleportEvent.sendEvent(posX, posZ, veh, false, false, false)
 			else
 				--Tardis:dp(string.format('telePort param1 {%s} - param2 {%s}', Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize));
-				Tardis:teleportToLocation(Tardis.worldXpos * g_currentMission.terrainSize, Tardis.worldZpos * g_currentMission.terrainSize);
+				Tardis:teleportToLocation(posX, posZ);
 			end
             Tardis.TardisActive = false;
             g_inputBinding:setShowMouseCursor(false);
@@ -278,6 +284,7 @@ function Tardis:action_tardis_resetVehicle(actionName, keyStatus, arg3, arg4, ar
 	if g_currentMission.controlledVehicle then
 		-- We can provide dummy values, as we'll do the actual stuff in the teleport function
 		Tardis:teleportToLocation(0, 0, nil, true);
+		TardisTeleportEvent.sendEvent(0, 0, nil, true, false, false)
 	end
 end
 
@@ -332,6 +339,7 @@ function Tardis:action_tardis_deleteHotspot(actionName, keyStatus, arg3, arg4, a
 	if hotspotId > 0 then
 		Tardis:dp(string.format('Found hotspot {%d}. Going to delete it.', hotspotId), 'action_deleteHotspot');
 		Tardis:removeMapHotspot(hotspotId);
+		TardisRemoveHotspotEvent.sendEvent(hotspotId, false);
 	else
 		Tardis:dp('No hotspots nearby', 'action_deleteHotspot');
 		Tardis:showBlinking(nil, 3);
@@ -367,97 +375,98 @@ function Tardis:showTardis()
 end
 
 function Tardis:teleportToLocation(x, z, veh, isReset, isHotspot)
+	if g_client ~= nil then
+		x = tonumber(x);
+		z = tonumber(z);
+		if x == nil then
+			return;
+		end;
 
-    x = tonumber(x);
-    z = tonumber(z);
-    if x == nil then
-        return;
-    end;
-
-	if envVeEx ~= nil and veh == nil then
-		if envVeEx.VehicleSort.showVehicles and envVeEx.VehicleSort.config[22][2] then
-			local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
-			if realVeh ~= nil then
-				veh = realVeh;
-				if veh ~= g_currentMission.controlledVehicle then
-					envVeEx.VehicleSort.wasTeleportAction = true;
-				end
-			end
-		end
-	end
-	
-	if veh == nil then
-		veh = g_currentMission.controlledVehicle;
-	end
-
-	-- We don't want to teleport cranes or trains
-	if veh ~= nil and (Tardis:isTrain(veh) or Tardis:isCrane(veh)) then
-		Tardis:Freeze(false);
-		return false;
-	end
-	
-	local targetX, targetY, targetZ = 0, 0, 0;
-	
-    if not isReset and not isHotspot then	
-		local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
-		local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
-		targetX = MathUtil.clamp(x, 0, worldSizeX) - worldSizeX * 0.5;
-		targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
-    elseif isHotspot then
-		targetX = x;
-		targetZ = z;
-	else
-		targetX, targetY, targetZ = getWorldTranslation(g_currentMission.controlledVehicle.rootNode);
-	end
-	
-	Tardis:dp(string.format('targetX {%s} - targetZ {%s}', tostring(targetX), tostring(targetZ)), 'teleportToLocation');
-	
-    if veh == nil and not isReset then
-		g_currentMission.player:moveTo(targetX, 0.5, targetZ, false, false);
-		Tardis:Freeze(false);
-    else
-        local vehicleCombos = {};
-        local vehicles = {};
-
-        local function addVehiclePositions(vehicle)
-            local x, y, z = getWorldTranslation(vehicle.rootNode);
-            table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(veh.rootNode, x, y, z)}});
-            
-			if not Tardis:isHorse(veh) then
-				if #vehicle:getAttachedImplements() > 0 then
-					for _, impl in pairs(vehicle:getAttachedImplements()) do
-						addVehiclePositions(impl.object);
-						table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.spec_attachable.inputAttacherJointDescIndex});
-					end
-					
-					for i = table.getn(vehicle:getAttachedImplements()), 1, -1 do
-						vehicle:detachImplement(1, true);
+		if envVeEx ~= nil and veh == nil then
+			if envVeEx.VehicleSort.showVehicles and envVeEx.VehicleSort.config[22][2] then
+				local realVeh = g_currentMission.vehicles[envVeEx.VehicleSort.Sorted[envVeEx.VehicleSort.selectedIndex]];
+				if realVeh ~= nil then
+					veh = realVeh;
+					if veh ~= g_currentMission.controlledVehicle then
+						envVeEx.VehicleSort.wasTeleportAction = true;
 					end
 				end
-			end
-
-			vehicle:removeFromPhysics();
-        end
-        
-        addVehiclePositions(veh);
-        
-        for k, data in pairs(vehicles) do
-            local x, y, z = targetX, targetY, targetZ;
-            if k > 1 then
-                x, _, z = localToWorld(veh.rootNode, unpack(data.offset));
-            end;
-            local _, ry, _ = getWorldRotation(data.vehicle.rootNode);
-            data.vehicle:setRelativePosition(x, 0.5, z, ry, true);
-            data.vehicle:addToPhysics();
-        end
-        
-		if #vehicleCombos > 0 then
-			for _, combo in pairs(vehicleCombos) do
-				combo.vehicle:attachImplement(combo.object, combo.inputAttacherJointDescIndex, combo.jointDescIndex, true, nil, nil, false);
 			end
 		end
 		
-		Tardis:Freeze(false);
+		if veh == nil then
+			veh = g_currentMission.controlledVehicle;
+		end
+
+		-- We don't want to teleport cranes or trains
+		if veh ~= nil and (Tardis:isTrain(veh) or Tardis:isCrane(veh)) then
+			Tardis:Freeze(false);
+			return false;
+		end
+		
+		local targetX, targetY, targetZ = 0, 0, 0;
+		
+		if not isReset and not isHotspot then	
+			local worldSizeX = g_currentMission.hud.ingameMap.worldSizeX;
+			local worldSizeZ = g_currentMission.hud.ingameMap.worldSizeZ;
+			targetX = MathUtil.clamp(x, 0, worldSizeX) - worldSizeX * 0.5;
+			targetZ = MathUtil.clamp(z, 0, worldSizeZ) - worldSizeZ * 0.5;
+		elseif isHotspot then
+			targetX = x;
+			targetZ = z;
+		else
+			targetX, targetY, targetZ = getWorldTranslation(g_currentMission.controlledVehicle.rootNode);
+		end
+		
+		Tardis:dp(string.format('targetX {%s} - targetZ {%s}', tostring(targetX), tostring(targetZ)), 'teleportToLocation');
+		
+		if veh == nil and not isReset then
+			g_currentMission.player:moveTo(targetX, 0.5, targetZ, false, false);
+			Tardis:Freeze(false);
+		else
+			local vehicleCombos = {};
+			local vehicles = {};
+
+			local function addVehiclePositions(vehicle)
+				local x, y, z = getWorldTranslation(vehicle.rootNode);
+				table.insert(vehicles, {vehicle = vehicle, offset = {worldToLocal(veh.rootNode, x, y, z)}});
+				
+				if not Tardis:isHorse(veh) then
+					if #vehicle:getAttachedImplements() > 0 then
+						for _, impl in pairs(vehicle:getAttachedImplements()) do
+							addVehiclePositions(impl.object);
+							table.insert(vehicleCombos, {vehicle = vehicle, object = impl.object, jointDescIndex = impl.jointDescIndex, inputAttacherJointDescIndex = impl.object.spec_attachable.inputAttacherJointDescIndex});
+						end
+						
+						for i = table.getn(vehicle:getAttachedImplements()), 1, -1 do
+							vehicle:detachImplement(1, true);
+						end
+					end
+				end
+
+				vehicle:removeFromPhysics();
+			end
+			
+			addVehiclePositions(veh);
+			
+			for k, data in pairs(vehicles) do
+				local x, y, z = targetX, targetY, targetZ;
+				if k > 1 then
+					x, _, z = localToWorld(veh.rootNode, unpack(data.offset));
+				end;
+				local _, ry, _ = getWorldRotation(data.vehicle.rootNode);
+				data.vehicle:setRelativePosition(x, 0.5, z, ry, true);
+				data.vehicle:addToPhysics();
+			end
+			
+			if #vehicleCombos > 0 then
+				for _, combo in pairs(vehicleCombos) do
+					combo.vehicle:attachImplement(combo.object, combo.inputAttacherJointDescIndex, combo.jointDescIndex, true, nil, nil, false);
+				end
+			end
+			
+			Tardis:Freeze(false);
+		end
     end
 
 end
@@ -536,6 +545,7 @@ function Tardis:useOrSetHotspot(hotspotId)
 		local z = Tardis.hotspots[hotspotId]['zMapPos'];
 		Tardis:dp(string.format('Hotspot {%d} exists. Teleporting now to: x {%s}, z {%s}', hotspotId, tostring(x), tostring(z)), 'createMapHotspot');
 		Tardis:teleportToLocation(x, z, nil, false, true);
+		TardisTeleportEvent.sendEvent(x, z, nil, false, true, false)
 	else
 		Tardis:createMapHotspot(hotspotId);
 	end
@@ -561,7 +571,9 @@ function Tardis:createMapHotspot(hotspotId, paramX, paramZ)
 	g_currentMission:addMapHotspot(hotspot);
 	
 	Tardis.hotspots[hotspotId] = hotspot;
-	-- if there is a paramX and paramZ it means we got it from the savegame, so no need for a blinking warning
+	TardisCreateHotspotEvent.sendEvent(hotspotId, x, z, true);
+	
+	-- if there is a paramX and paramZ it means we got it from a savegame, so no need for a blinking warning
 	if paramX == nil and paramZ == nil then
 		Tardis:showBlinking(hotspotId, 1);
 	end
@@ -607,6 +619,7 @@ function Tardis:loadHotspots()
 					local zMapPos = getXMLFloat(savegame, hotspotKey .. "#zMapPos");
 					Tardis:dp(string.format('Loaded MapHotSpot {%d} from savegame. xMapPos {%s}, zMapPos {%s}', i, tostring(xMapPos), tostring(zMapPos)), 'loadHotspots');
 					Tardis:createMapHotspot(i, xMapPos, zMapPos);
+					TardisCreateHotspotEvent.sendEvent(hotspotId, xMapPos, zMapPos, true);
 				end
 			end
 		end
@@ -642,16 +655,18 @@ function Tardis:hotspotNearby()
 end
 
 function Tardis:showBlinking(hotspotId, action)
-	--action: 1 created, 2 deleted, 3 nohotspots
-	local text = '';
-	if action == 1 then
-		text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_created);		
-	elseif action == 2 then
-		text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_deleted);
-	elseif action == 3 then
-		text = g_i18n.modEnvironments[Tardis.ModName].texts.warning_nohotspot;
+	if g_client ~= nil then
+		--action: 1 created, 2 deleted, 3 nohotspots
+		local text = '';
+		if action == 1 then
+			text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_created);		
+		elseif action == 2 then
+			text = string.format('%s %d %s', g_i18n.modEnvironments[Tardis.ModName].texts.hotspot, hotspotId, g_i18n.modEnvironments[Tardis.ModName].texts.warning_deleted);
+		elseif action == 3 then
+			text = g_i18n.modEnvironments[Tardis.ModName].texts.warning_nohotspot;
+		end
+		g_currentMission:showBlinkingWarning(text, 2000);
 	end
-	g_currentMission:showBlinkingWarning(text, 2000);
 end
 
 function Tardis:isActionAllowed()

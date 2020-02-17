@@ -13,7 +13,7 @@ Feedback, this readme and additional information incl. source code can be find a
 * Teleport yourself (the player) to any location on the map
 * Enter a vehicle to teleport yourself AND the vehicle (incl. implements, trailers) to any location on the map
 * Reset a crashed/turned over vehicle. Reset in this case means to turn it over again
-* Set up to 9 map hotspots to easily teleport yourself and/or vehicles to one of those spots. Those hotspots obviously get saved & restored.
+* Set up to 5 map hotspots to easily teleport yourself and/or vehicles to one of those spots. Those hotspots obviously get saved & restored.
 * Integration with Vehicle Explorer (https://github.com/sperrgebiet/FS19_VehicleExplorer)
   
 
@@ -29,7 +29,7 @@ Feedback, this readme and additional information incl. source code can be find a
 |:---:|---|
 |LAlt + t|Activate Tardis|
 |LAlt + Backspace|Reset|
-|LAlt + LShift + KeyPad 1 - 9|Set or visit the map hotspot|
+|LAlt + LShift + KeyPad 1 - 5|Set or visit the map hotspot|
 |LAlt + LShift + Backspace|Delete a map hotspot in a 25m range|
 |Mouse Left|Teleport|
 
@@ -45,7 +45,7 @@ Additionally Ifko[nator] for the RegisterSpecialization script.
 
 
 ## Latest Version
-0.9.1.6 - I consider it as Beta. I tested it quite a lot myself, but hope for some helpful feedback from the community.
+0.9.1.4 - I consider it as Beta. I tested it quite a lot myself, but hope for some helpful feedback from the community.
 
 -----
 
@@ -64,7 +64,7 @@ Feedback, dieses ReadMe und weitere Informationen sowie der Quelltext findet sic
 * Teleportiere dich (den Spieler) an jeden Ort auf der Karte
 * Besteige ein Fahrzeug um dich UND das Fahrzeug (inkl. angehängter Geräte, Anhänger) an jeden Ort zu teleportieren
 * Wieder aufrichten von umgekippten Fahrzeugen
-* Setze bis zu 9 Hotspots auf der Karte um dich und/oder Fahrzeuge an diese Orte zu teleportieren. Diese werden natürlich gespeichert und geladen.
+* Setze bis zu 5 Hotspots auf der Karte um dich und/oder Fahrzeuge an diese Orte zu teleportieren. Diese werden natürlich gespeichert und geladen.
 * Integration mit VehicleExplorer (https://github.com/sperrgebiet/FS19_VehicleExplorer)
 
 
@@ -79,7 +79,7 @@ Feedback, dieses ReadMe und weitere Informationen sowie der Quelltext findet sic
 |:---:|---|
 |LAlt + t|Tardis aktivieren (funktioniert nur auf der MiniMap)|
 |LAlt + Rücktaste|Fahrzeug aufrichten|
-|LAlt + LUmschalt + NumPad 1 - 9|Setzen/besuchen der Hotspots|
+|LAlt + LUmschalt + NumPad 1 - 5|Setzen/besuchen der Hotspots|
 |LAlt + LUmschalt + Rücktaste|Löschen eines Mapspots in der Nähe (25m)|
 |Linke Maustaste|An diese Position teleportieren|
 
@@ -94,7 +94,7 @@ Auch Kudos an die Jungs und Mädls von CoursePlay, VehicleInspector, VehicleFrui
 Des weiteren noch Ifko[nator] für das RegisterSpecialization Skript.
 
 ## Letzte Version
-0.9.1.6 - I würd mal sagen dies ist noch eine Beta. Ich hab zwar selbst recht viel getestet, hoffe aber auf hilfreiche Rückmeldungen von der Community.
+0.9.1.4 - I würd mal sagen dies ist noch eine Beta. Ich hab zwar selbst recht viel getestet, hoffe aber auf hilfreiche Rückmeldungen von der Community.
 
 
 # Screenshots
