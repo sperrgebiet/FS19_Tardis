@@ -545,13 +545,16 @@ function Tardis:useOrSetHotspot(hotspotId)
 		local z = Tardis.hotspots[hotspotId]['zMapPos'];
 		Tardis:dp(string.format('Hotspot {%d} exists. Teleporting now to: x {%s}, z {%s}', hotspotId, tostring(x), tostring(z)), 'createMapHotspot');
 		Tardis:teleportToLocation(x, z, nil, false, true);
-		TardisTeleportEvent.sendEvent(x, z, nil, false, true, false)
+		if g_currentMission.controlledVehicle ~= nil then
+			local veh = g_currentMission.controlledVehicle;
+			TardisTeleportEvent.sendEvent(x, z, veh, false, false, false);
+		end
 	else
 		Tardis:createMapHotspot(hotspotId);
 	end
 end
 
-function Tardis:createMapHotspot(hotspotId, paramX, paramZ)
+function Tardis:createMapHotspot(hotspotId, paramX, paramZ, initialSync)
 	Tardis:dp(string.format('Going to create mapHotspot {%d}', hotspotId), 'createMapHotspot');
 	local x = paramX;
 	local y = nil;
@@ -569,12 +572,16 @@ function Tardis:createMapHotspot(hotspotId, paramX, paramZ)
 	hotspot:setBackgroundImage(nil, getNormalizedUVs(MapHotspot.UV.FARM_HOUSE));
 	
 	g_currentMission:addMapHotspot(hotspot);
+
+	--We just want to send the event in case we don't have the hotspot locally yet, otherwise we end up in a loop. And well, obviously if we specificy the noEventSend param
+	if (Tardis.hotspots[hotspotId] == nil) and (initialSync == nil or initialSync == false) then
+		TardisCreateHotspotEvent.sendEvent(hotspotId, x, z, false);
+	end
 	
 	Tardis.hotspots[hotspotId] = hotspot;
-	TardisCreateHotspotEvent.sendEvent(hotspotId, x, z, true);
 	
 	-- if there is a paramX and paramZ it means we got it from a savegame, so no need for a blinking warning
-	if paramX == nil and paramZ == nil then
+	if (paramX == nil and paramZ == nil) or (initialSync == nil or initialSync == false) then
 		Tardis:showBlinking(hotspotId, 1);
 	end
 end
@@ -678,5 +685,13 @@ function Tardis:isActionAllowed()
 	end
 end
 
+-- Initial Hotspot sync in MP
+-- Kudos to AnimalPenExtension how to do that
+function Tardis:sendObjects(connection)
+	TardisInitialSyncEvent.sendEvent();
+end
+
+
 Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, Tardis.loadedMission)
 FSCareerMissionInfo.saveToXMLFile = Utils.appendedFunction(FSCareerMissionInfo.saveToXMLFile, Tardis.saveToXMLFile)
+Server.sendObjects = Utils.prependedFunction(Server.sendObjects, Tardis.sendObjects)

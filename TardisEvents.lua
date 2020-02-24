@@ -1,6 +1,88 @@
 --
 -- MP Stuff
 
+-- Initial Sync
+
+TardisInitialSyncEvent = {}
+TardisInitialSyncEvent_mt = Class(TardisInitialSyncEvent, Event)
+
+InitEventClass(TardisInitialSyncEvent, "TardisInitialSyncEvent")
+
+function TardisInitialSyncEvent:emptyNew()
+    local self = Event:new(TardisInitialSyncEvent_mt)
+	self.className = "TardisInitialSyncEvent"
+    return self
+end
+
+function TardisInitialSyncEvent:new(dataString)
+	Tardis:dp(string.format('%s fires', "TardisInitialSyncEvent:new"));
+    local self = TardisInitialSyncEvent:emptyNew()
+    self.dataString = dataString
+    return self
+end
+
+function TardisInitialSyncEvent:readStream(streamId, connection)
+	if connection:getIsServer() then
+		Tardis:dp(string.format('%s fires', "TardisInitialSyncEvent:readStream"));
+		self.dataString = streamReadString(streamId)
+		self:run(connection)
+	end
+end
+
+function TardisInitialSyncEvent:writeStream(streamId, connection)
+	if not connection:getIsServer() then
+		Tardis:dp(string.format('%s fires', "TardisInitialSyncEvent:writeStream"));
+		local dataString = ""
+
+		for k, v in pairs(Tardis.hotspots) do
+			--string format: hotspotId=xMapPos;zMapPos#hotspot2=xMapPos2;zMapPos2 etc.
+			--so hotspots are seperated by a semicolon, and the hotspotId and xMap & zMap position are seperated by a whitespace
+			dataString = dataString .. string.format("%s %s %s;", k, v['xMapPos'], v['zMapPos'])
+		end
+		streamWriteString(streamId, dataString)
+	end
+end
+
+function TardisInitialSyncEvent:run(connection)
+	Tardis:dp(string.format('%s fires', "TardisInitialSyncEvent:run"));
+
+	if connection:getIsServer() then
+		local newHotspots = {}
+
+		-- First we seperate our hotspots based on the semicolon
+		for substring in self.dataString:gmatch("[^;]+") do
+			
+			--And now we create a temp table to seperate every hotspot information which is seperated by whitespace so that we get id, xMapPos and zMapPos
+			local tempTable = {}
+			for stringMatch in substring:gmatch("%S+") do
+				table.insert(tempTable, stringMatch)
+			end
+			local index = tonumber(tempTable[1])
+			newHotspots[index] = {}
+			newHotspots[index]['xMapPos'] = tempTable[2]
+			newHotspots[index]['zMapPos'] = tempTable[3]
+		end
+
+		if g_server == nil then
+			-- For each received hotspot we've to create a new one
+			for k, v in pairs(newHotspots) do
+				Tardis:createMapHotspot(k, v['xMapPos'], v['zMapPos'], true);
+			end
+		end
+	end
+end
+
+function TardisInitialSyncEvent.sendEvent(noEventSend)
+	Tardis:dp(string.format('%s fires', "TardisInitialSyncEvent:sendEvent"));
+	if noEventSend == nil or noEventSend == false then
+		if g_server ~= nil then
+			g_server:broadcastEvent(TardisInitialSyncEvent:new(dataString), nil, nil, self)
+		else
+			g_client:getServerConnection():sendEvent(TardisInitialSyncEvent:new(dataString))
+		end
+	end
+end
+
 -- Teleport
 
 TardisTeleportEvent = {}
@@ -42,6 +124,7 @@ function TardisTeleportEvent:writeStream(streamId, connection)
 end
 
 function TardisTeleportEvent:run(connection)
+	Tardis:dp(string.format('%s fires', "TardisTeleportEvent:run"));
 	Tardis:teleportToLocation(self.x, self.z, self.vehicle, self.isReset, self.isHotspot)
 	if not connection:getIsServer() then
 		g_server:broadcastEvent(TardisTeleportEvent:new(self.x, self.z, self.vehicle, self.isReset, self.isHotspot), nil, nil, self)
@@ -49,7 +132,7 @@ function TardisTeleportEvent:run(connection)
 end
 
 function TardisTeleportEvent.sendEvent(x, z, vehicle, isReset, isHotspot, noEventSend)
-		if isReset == nil then
+	if isReset == nil then
 		isReset = false
 	end
 	if isHotspot == nil then
@@ -100,18 +183,19 @@ function TardisCreateHotspotEvent:writeStream(streamId, connection)
 end
 
 function TardisCreateHotspotEvent:run(connection)
+	Tardis:dp(string.format('%s fires', "TardisCreateHotspotEvent:run"));
 	Tardis:createMapHotspot(self.hotspotId , self.x, self.z)
 	if not connection:getIsServer() then  
 		g_server:broadcastEvent(TardisCreateHotspotEvent:new(self.hotspotId, self.x, self.z), nil, nil, self)
 	end
 end
 
-function TardisCreateHotspotEvent.sendEvent(hotspotId, x, y, noEventSend)
+function TardisCreateHotspotEvent.sendEvent(hotspotId, x, z, noEventSend)
 	if noEventSend == nil or noEventSend == false then
 		if g_server ~= nil then
-			g_server:broadcastEvent(TardisCreateHotspotEvent:new(hotspotId, x, y), nil, nil, self)
+			g_server:broadcastEvent(TardisCreateHotspotEvent:new(hotspotId, x, z), nil, nil, self)
 		else
-			g_client:getServerConnection():sendEvent(TardisCreateHotspotEvent:new(hotspotId, x, y))
+			g_client:getServerConnection():sendEvent(TardisCreateHotspotEvent:new(hotspotId, x, z))
 		end
 	end
 end
@@ -145,6 +229,7 @@ function TardisRemoveHotspotEvent:writeStream(streamId, connection)
 end
 
 function TardisRemoveHotspotEvent:run(connection)
+	Tardis:dp(string.format('%s fires', "TardisRemoveHotspotEvent:run"));
 	Tardis:removeMapHotspot(self.hotspotId)
 	if not connection:getIsServer() then  
 		g_server:broadcastEvent(TardisRemoveHotspotEvent:new(self.hotspotId), nil, nil, self)
