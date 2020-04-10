@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="46">
+<modDesc descVersion="47">
 	<author>sperrgebiet</author>
 	<version>0.9.1.6</version>
 	<title>Tardis Teleport</title>
@@ -22,7 +22,16 @@
 			Mehr Details: https://github.com/sperrgebiet/FS19_Tardis
 			]]>
 		</de>
-	</description>
+		<es>
+			<![CDATA[
+			Esta es una versión renovada del viejo Tardis de FS17
+			Para novatos: con Tardis puedes teletransportarte solo o con vehículos a cualquier lugar del mapa.
+			A parte de eso se han añadido un par de funcionalidades.
+			
+			Más info en: https://github.com/sperrgebiet/FS19_Tardis
+			]]>
+		</es>
+		</description>
 	<iconFilename>icon.dds</iconFilename>
 	<multiplayer supported="false" />
 
@@ -92,86 +101,107 @@
 		<text name="tardis_Title">
 			<de>Tardis Teleport</de>
 			<en>Tardis Teleport</en>
+			<es>Tardis Teleport</es>
 		</text>
 		<text name="input_tardis_showTardisCursor">
 			<de>Tardis: Auf Minimap aktivieren</de>
 			<en>Tardis: Activate on Minimap</en>
+			<es>Tardis: Activar en Minimapa</es>
 		</text>
 		<text name="input_tardis_resetVehicle">
 			<de>Tardis: Fahrzeug auf derzeitiger Position aufrichten</de>
 			<en>Tardis: Raise up vehicle on current position</en>
+			<es>Tardis: Mover vehículo a la posición actual</es>
 		</text>
 		<text name="lonelyFarmer">
 			<de>Einsamer Landwirt</de>
 			<en>Lonely Farmer</en>
+			<es>Granjero Solitario</es>
 		</text>		
 		<text name="warning_combine">
 			<de>Ein Drescher sollte leer und zugeklappt sein, da es ansonsten Probleme geben kann.</de>
 			<en>A combine should be folded and empty, otherwise there can be issues.</en>
+			<es>Una cosechadora debería ser plegada y vaciada, de lo contrario podría haber errores.</es>
 		</text>
 		<text name="warning_train">
 			<de>Ein Zug passt leider nicht in eine Telefonzelle. Tardis funktioniert hier nicht.</de>
 			<en>A train doesn't fit a phone box. Tardis won't work here.</en>
+			<es>Un tren no se puede meter en una cabina ¬_¬  ...Tardis no funciona aquí.</es>
 		</text>
 		<text name="warning_crane">
 			<de>Ein Kran passt leider nicht in eine Telefonzelle. Tardis funktioniert hier nicht.</de>
 			<en>A crane doesn't fit a phone box. Tardis won't work here.</en>
+			<es>Una grua no se puede meter en una cabina ¬_¬  ...Tardis no funciona aquí.</es>
 		</text>
 		<text name="hotspot">
 			<de>Tardis Hotspot</de>
 			<en>Tardis Hotspot</en>
+			<es>Punto de Acceso Tardis</es>
 		</text>
 		<text name="input_tardis_useHotspot1">
 			<de>Tardis: Ort 1</de>
 			<en>Tardis: Spot 1</en>
+			<es>Tardis: Punto 1</es>
 		</text>
 		<text name="input_tardis_useHotspot2">
 			<de>Tardis: Ort 2</de>
 			<en>Tardis: Spot 2</en>
+			<es>Tardis: Punto 2</es>
 		</text>	
 		<text name="input_tardis_useHotspot3">
 			<de>Tardis: Ort 3</de>
 			<en>Tardis: Spot 3</en>
+			<es>Tardis: Punto 3</es>
 		</text>	
 		<text name="input_tardis_useHotspot4">
 			<de>Tardis: Ort 4</de>
 			<en>Tardis: Spot 4</en>
+			<es>Tardis: Punto 4</es>
 		</text>	
 		<text name="input_tardis_useHotspot5">
 			<de>Tardis: Ort 5</de>
 			<en>Tardis: Spot 5</en>
+			<es>Tardis: Punto 5</es>
 		</text>
 		<text name="input_tardis_useHotspot6">
 			<de>Tardis: Ort 6</de>
 			<en>Tardis: Spot 6</en>
+			<es>Tardis: Punto 6</es>
 		</text>	
 		<text name="input_tardis_useHotspot7">
 			<de>Tardis: Ort 7</de>
 			<en>Tardis: Spot 7</en>
+			<es>Tardis: Punto 7</es>
 		</text>	
 		<text name="input_tardis_useHotspot8">
 			<de>Tardis: Ort 8</de>
 			<en>Tardis: Spot 8</en>
+			<es>Tardis: Punto 8</es>
 		</text>	
 		<text name="input_tardis_useHotspot9">
 			<de>Tardis: Ort 9</de>
 			<en>Tardis: Spot 9</en>
+			<es>Tardis: Punto 9</es>
 		</text>	
 		<text name="input_tardis_deleteHotspot">
 			<de>Tardis: Lösche Hotspot im Umkreis</de>
 			<en>Tardis: Delete Hotspot in range</en>
+			<es>Tardis: Borrar punto de acceso cercano</es>
 		</text>
 		<text name="warning_nohotspot">
 			<de>Keine Tardis Hotspots im Umkreis gefunden</de>
 			<en>No Tardis Hotspots found in this area</en>
+			<es>No hay punto de acceso Tardis en esta zona</es>
 		</text>
 		<text name="warning_created">
 			<de>erstellt</de>
 			<en>created</en>
+			<es>Creado</es>
 		</text>
 		<text name="warning_deleted">
 			<de>gelöscht</de>
 			<en>deleted</en>
+			<es>Borrado</es>
 		</text>
 	</l10n>
 </modDesc>
