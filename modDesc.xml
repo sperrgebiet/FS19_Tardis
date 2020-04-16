@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="46">
+<modDesc descVersion="47">
 	<author>sperrgebiet</author>
-	<version>0.9.1.6</version>
+	<version>0.9.1.7</version>
 	<title>Tardis Teleport</title>
 	<description>
 		<en>
@@ -24,7 +24,7 @@
 		</de>
 	</description>
 	<iconFilename>icon.dds</iconFilename>
-	<multiplayer supported="false" />
+	<multiplayer supported="true" />
 
 	<extraSourceFiles>
 		<sourceFile filename="RegisterSpecialization.lua" />
