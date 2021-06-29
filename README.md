@@ -45,7 +45,7 @@ Additionally Ifko[nator] for the RegisterSpecialization script.
 
 
 ## Latest Version
-0.9.1.7 - I consider it as Beta. I tested it quite a lot myself, but hope for some helpful feedback from the community.
+0.9.2.0 - I wouldn't call it beta anymore, but I won't make it a v1 before MP is working.
 
 -----
 
@@ -94,7 +94,7 @@ Auch Kudos an die Jungs und Mädls von CoursePlay, VehicleInspector, VehicleFrui
 Des weiteren noch Ifko[nator] für das RegisterSpecialization Skript.
 
 ## Letzte Version
-0.9.1.7 - I würd mal sagen dies ist noch eine Beta. Ich hab zwar selbst recht viel getestet, hoffe aber auf hilfreiche Rückmeldungen von der Community.
+0.9.2.0 - Ich nenn es nicht mehr Beta, da es bei mir sehr gut funktioniert. Jedoch werde ich erst eine v1. draus machen wenn ich mal Zeit für MP hab.
 
 
 # Screenshots

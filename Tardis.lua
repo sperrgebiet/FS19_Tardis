@@ -514,10 +514,14 @@ function Tardis:Freeze(setFreeze)
 			-- We just want to mess with the cameras when we can ensure that we can do a backup first
 			if Tardis.camBackup[veh.id] == nil then
 				Tardis.camBackup[veh.id] = {};
-				for	i, v in ipairs(veh.spec_enterable.cameras) do
-					local cam = {i, v.isRotatable};
-					table.insert(Tardis.camBackup[veh.id], cam);
-					v.isRotatable = false;
+				for	i, camera in pairs(veh.spec_enterable.cameras) do
+                    local camSettings = {};
+                    camSettings['camId'] = i;
+                    camSettings['isRotatable'] = camera.isRotatable;
+					table.insert(Tardis.camBackup[veh.id], camSettings);
+                    camSettings = nil;
+                    camera.storedIsRotatable = camera.isRotatable;
+					camera.isRotatable = false;
 				end
 			end
 		else
@@ -526,8 +530,9 @@ function Tardis:Freeze(setFreeze)
 	else
 		if veh ~= nil and veh.id ~= nil then
 			if Tardis.camBackup[veh.id] ~= nil then
-				for _, v in ipairs(Tardis.camBackup[veh.id]) do
-					veh.spec_enterable.cameras[v[1]]['isRotatable'] = v[2];
+				for _, v in pairs(Tardis.camBackup[veh.id]) do
+					veh.spec_enterable.cameras[v['camId']]['isRotatable'] = v['isRotatable'];
+                    veh.spec_enterable.cameras[v['camId']]['storedIsRotatable'] = v['isRotatable'];
 				end
 				Tardis.camBackup[veh.id] = nil;
 			end
