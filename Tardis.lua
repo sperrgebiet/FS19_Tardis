@@ -7,7 +7,7 @@ Tardis.eventName = {};
 
 Tardis.ModName = g_currentModName;
 Tardis.ModDirectory = g_currentModDirectory;
-Tardis.Version = "0.9.1.7";
+Tardis.Version = "0.9.2.1";
 
 -- Integration environment for VehicleExplorer
 envVeEx = nil;
@@ -85,7 +85,8 @@ function Tardis:registerActionEvents(isSelected, isOnActiveVehicle)
 					"tardis_useHotspot7",
 					"tardis_useHotspot8",
 					"tardis_useHotspot9",
-					"tardis_deleteHotspot"
+					"tardis_deleteHotspot",
+                    "tardis_resetCamera"
 				};
 
 	for _, action in pairs(actions) do
@@ -345,6 +346,21 @@ function Tardis:action_tardis_deleteHotspot(actionName, keyStatus, arg3, arg4, a
 		Tardis:dp('No hotspots nearby', 'action_deleteHotspot');
 		Tardis:showBlinking(nil, 3);
 	end
+end
+
+function Tardis:action_tardis_resetCamera(actionName, keyStatus, arg3, arg4, arg5)
+	Tardis:dp(string.format('%s fires', actionName));
+	
+    local veh = g_currentMission.controlledVehicle
+    for	i, _ in ipairs(veh.spec_enterable.cameras) do
+        veh.spec_enterable.cameras[i].isRotatable = true
+        veh.spec_enterable.cameras[i].storedIsRotatable = true
+    end
+
+	text = g_i18n.modEnvironments[Tardis.ModName].texts.resetCameraText;
+    g_currentMission:showBlinkingWarning(text, 2000);
+
+
 end
 
 --

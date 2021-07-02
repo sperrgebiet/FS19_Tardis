@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="53">
 	<author>sperrgebiet</author>
-	<version>0.9.2.0</version>
+	<version>0.9.2.1</version>
 	<title>Tardis Teleport</title>
 	<description>
 		<en>
@@ -48,6 +48,7 @@
 		<action name="tardis_useHotspot8" axisType="HALF" />
 		<action name="tardis_useHotspot9" axisType="HALF" />
 		<action name="tardis_deleteHotspot" axisType="HALF" />
+        <action name="tardis_resetCamera" axisType="HALF" />
 	</actions>
 	<inputBinding>	
 		<actionBinding action="tardis_showTardisCursor">
@@ -85,7 +86,10 @@
 		</actionBinding>
 		<actionBinding action="tardis_deleteHotspot">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_backspace" index="1" />
-		</actionBinding>	
+		</actionBinding>
+		<actionBinding action="tardis_resetCamera">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lalt KEY_r" index="1" />
+		</actionBinding>
     </inputBinding>	
 	
 	<l10n>
@@ -173,5 +177,13 @@
 			<de>gelöscht</de>
 			<en>deleted</en>
 		</text>
+        <text name="tardis_resetCamera">
+            <de>Tardis: Kameras zurücksetzen</de>
+            <en>Tardis: Reset cameras</en>
+        </text>
+        <text name="resetCameraText">
+            <de>Kameras wurden zurückgesetzt</de>
+            <en>Camera reset successful</en>
+        </text>
 	</l10n>
 </modDesc>
